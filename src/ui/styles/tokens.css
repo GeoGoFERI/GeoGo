@@ -1,0 +1,36 @@
+/* Colour tokens sampled from the logo. Use only these. */
+:root {
+  --geogo-navy: #142444;
+  --geogo-sky: #24b4e4;
+  --geogo-ocean: #1494c4;
+  --geogo-green: #7cbc54;
+  --geogo-yellow: #fccc24;
+  --geogo-orange: #fc944c;
+  --geogo-orange-deep: #f47c34;
+  --geogo-paper: #ffffff;
+
+  /* Map states, derived from the tokens above. */
+  --map-ocean: #d9f2fb;
+  --map-land: #fff1b8;
+  --map-hover: var(--geogo-yellow);
+  --map-correct: var(--geogo-green);
+  --map-wrong: var(--geogo-orange);
+  --map-mastered: #cfe8bf;
+
+  --font-body: 'Fredoka', system-ui, sans-serif;
+  --text-body: 18px;
+  --text-heading: 28px;
+  --text-label: 14px;
+
+  --border: 3px solid var(--geogo-navy);
+  --radius-card: 16px;
+  --shadow-hard: 0 4px 0 var(--geogo-navy);
+  --touch: 44px;
+  --motion-fast: 250ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+  }
+}

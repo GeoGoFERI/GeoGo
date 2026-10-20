@@ -1,0 +1,116 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--text-body);
+  line-height: 1.4;
+  color: var(--geogo-navy);
+  background: var(--geogo-paper);
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.15;
+}
+
+h1,
+h2 {
+  font-size: var(--text-heading);
+}
+
+/* Visible focus ring on every control, keyboard only. */
+:focus-visible {
+  outline: 4px solid var(--geogo-yellow);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px var(--geogo-navy);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--touch);
+  min-width: var(--touch);
+  padding: 8px 22px;
+  border: var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-hard);
+  background: var(--geogo-sky);
+  color: var(--geogo-navy);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--motion-fast);
+  text-decoration: none;
+}
+
+.btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--geogo-navy);
+}
+
+.btn:hover {
+  background: var(--geogo-ocean);
+}
+
+.btn--accent {
+  background: var(--geogo-orange);
+}
+
+.btn--accent:hover {
+  background: var(--geogo-orange-deep);
+}
+
+.btn--plain {
+  background: var(--geogo-paper);
+}
+
+.btn--plain:hover {
+  background: var(--geogo-yellow);
+}
+
+.btn--big {
+  font-size: 24px;
+  padding: 12px 36px;
+}
+
+.btn--round {
+  border-radius: 50%;
+  padding: 0;
+  width: 52px;
+  height: 52px;
+}
+
+.card {
+  border: var(--border);
+  border-radius: var(--radius-card);
+  background: var(--geogo-paper);
+  padding: 16px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
