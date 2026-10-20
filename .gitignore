@@ -67,3 +67,6 @@ android/
 ios/
 .gradle/
 local.properties
+
+# PWA dev service worker
+dev-dist/
