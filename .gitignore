@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/
+
+# Build output
+dist/
+dist-ssr/
+build/
+.vite/
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+
+# Test output
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editors and IDEs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+._*
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+tmp/
+
+# Raw downloads that can be fetched again (commit processed data, not raw downloads)
+.downloads/
+
+# Capacitor (if the app is wrapped later)
+android/
+ios/
+.gradle/
+local.properties
