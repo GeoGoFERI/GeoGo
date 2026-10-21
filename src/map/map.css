@@ -41,3 +41,26 @@
 .shape--mastered {
   fill: var(--map-mastered);
 }
+
+.shape--interactive {
+  cursor: pointer;
+  outline: none;
+}
+
+/* Hover only where a real pointer hovers, so taps do not leave a sticky highlight. */
+@media (hover: hover) {
+  .shape--interactive:hover {
+    fill: var(--map-hover);
+  }
+}
+
+/* Keyboard focus: a thick navy outline plus yellow fill, so it is not colour alone. */
+.shape--interactive:focus-visible {
+  fill: var(--map-hover);
+  stroke-width: 4px;
+}
+
+.map__svg:focus-visible {
+  outline: 4px solid var(--geogo-yellow);
+  outline-offset: -4px;
+}

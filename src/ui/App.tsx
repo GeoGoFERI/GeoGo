@@ -1,4 +1,4 @@
-import { useReducer, type ReactElement } from 'react';
+import { useReducer, useState, type ReactElement } from 'react';
 import { sl } from '../i18n/sl';
 import { initialScreen, screenReducer } from './screens';
 import { MapView } from '../map/MapView';
@@ -11,6 +11,8 @@ import './styles/app.css';
 
 export function App(): ReactElement {
   const [screen, dispatch] = useReducer(screenReducer, initialScreen);
+  // Temporary readout for the map engine phase.
+  const [lastClicked, setLastClicked] = useState('');
 
   return (
     <div className="app">
@@ -47,7 +49,13 @@ export function App(): ReactElement {
         {screen.name === 'play' && (
           <section className="placeholder placeholder--map">
             <p>{sl.placeholderPlay}</p>
-            <MapView shapes={worldCountryShapes} label={sl.mapLabel} />
+            <MapView
+              shapes={worldCountryShapes}
+              label={sl.mapLabel}
+              shapeLabel={() => sl.mapShape}
+              onSelect={(id) => setLastClicked(id)}
+            />
+            <p data-testid="last-clicked">{lastClicked}</p>
             <button type="button" className="btn" onClick={() => dispatch({ type: 'answered' })}>
               {sl.next}
             </button>

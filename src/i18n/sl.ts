@@ -8,6 +8,7 @@ export const sl = {
   atlas: 'Moj atlas',
   back: 'Nazaj',
   mapLabel: 'Zemljevid sveta',
+  mapShape: 'Območje na zemljevidu',
   placeholderPlay: 'Tukaj bo igra.',
   placeholderFact: 'Tukaj bo zanimivost.',
   placeholderSummary: 'Tukaj bo povzetek kroga.',
