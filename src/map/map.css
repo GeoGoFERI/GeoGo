@@ -1,0 +1,43 @@
+.map {
+  position: relative;
+  flex: 1;
+  min-height: 200px;
+  width: 100%;
+  overflow: hidden;
+  background: var(--geogo-paper);
+}
+
+.map__svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  touch-action: none;
+  user-select: none;
+}
+
+.map__sphere {
+  fill: var(--map-ocean);
+  stroke: var(--geogo-navy);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
+
+.shape--area {
+  fill: var(--map-land);
+  stroke: var(--geogo-navy);
+  stroke-width: 1px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.shape--correct {
+  fill: var(--map-correct);
+}
+
+.shape--wrong {
+  fill: var(--map-wrong);
+}
+
+.shape--mastered {
+  fill: var(--map-mastered);
+}

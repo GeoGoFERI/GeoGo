@@ -7,6 +7,7 @@ export const sl = {
   again: 'Še enkrat',
   atlas: 'Moj atlas',
   back: 'Nazaj',
+  mapLabel: 'Zemljevid sveta',
   placeholderPlay: 'Tukaj bo igra.',
   placeholderFact: 'Tukaj bo zanimivost.',
   placeholderSummary: 'Tukaj bo povzetek kroga.',

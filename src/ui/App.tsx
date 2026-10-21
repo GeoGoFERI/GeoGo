@@ -1,6 +1,8 @@
 import { useReducer, type ReactElement } from 'react';
 import { sl } from '../i18n/sl';
 import { initialScreen, screenReducer } from './screens';
+import { MapView } from '../map/MapView';
+import { worldCountryShapes } from './devShapes';
 import logoUrl from './assets/logo.webp';
 import './styles/fonts';
 import './styles/tokens.css';
@@ -43,8 +45,9 @@ export function App(): ReactElement {
           </section>
         )}
         {screen.name === 'play' && (
-          <section className="placeholder">
+          <section className="placeholder placeholder--map">
             <p>{sl.placeholderPlay}</p>
+            <MapView shapes={worldCountryShapes} label={sl.mapLabel} />
             <button type="button" className="btn" onClick={() => dispatch({ type: 'answered' })}>
               {sl.next}
             </button>
