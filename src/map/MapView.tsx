@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -11,9 +12,12 @@ import { createProjection } from './projection';
 import { useSize } from './useSize';
 import { anchorOf } from './anchors';
 import { nearestAnchor, nextInDirection, type Direction } from './focusNav';
-import type { MapShape, ShapeState } from './types';
+import { hitSizes, hitTargets } from './hitAreas';
+import { HitLayer } from './HitLayer';
 import { useZoom } from './useZoom';
 import { ZoomButtons } from './ZoomButtons';
+import type { ViewTransform } from './regions';
+import type { MapShape, ShapeState } from './types';
 import './map.css';
 
 export interface MapViewProps {
@@ -34,10 +38,25 @@ const ARROWS: Record<string, Direction> = {
   ArrowRight: 'right',
 };
 
+const NO_STATES: Readonly<Record<string, ShapeState>> = {};
+
+// Rescales the tiny-place dots and tap circles so they stay the same size on screen.
+function applyHitSizes(svg: SVGSVGElement | null, k: number): void {
+  if (!svg) return;
+  for (const group of svg.querySelectorAll<SVGGElement>('[data-hit-size]')) {
+    const sizes = hitSizes(Number(group.dataset.hitSize), k);
+    const [dot, hit] = group.children;
+    dot?.setAttribute('r', String(sizes.dotRadius));
+    dot?.setAttribute('display', sizes.showDot ? 'inline' : 'none');
+    hit?.setAttribute('r', String(sizes.hitRadius));
+    hit?.setAttribute('display', sizes.showHit ? 'inline' : 'none');
+  }
+}
+
 // The interactive SVG map.
 export function MapView({
   shapes,
-  states = {},
+  states = NO_STATES,
   onSelect,
   labels,
   shapeLabel,
@@ -49,18 +68,28 @@ export function MapView({
   // Roving focus: exactly one shape is in the tab order at a time.
   const [activeId, setActiveId] = useState<string | undefined>(undefined);
 
-  // Path strings and anchors depend only on the shapes and the container size.
+  // Path strings, anchors and tap targets depend only on the shapes and the container size.
   const geometry = useMemo(() => {
     const anchors = new Map<string, [number, number]>();
-    if (width === 0 || height === 0) return { sphere: '', drawn: [], anchors };
+    if (width === 0 || height === 0) return { sphere: '', drawn: [], anchors, targets: [] };
     const path = geoPath(createProjection(width, height));
-    const drawn = shapes.map((s) => ({ shape: s, d: path(s.feature) ?? '' }));
+    const drawn = shapes
+      .filter((s) => s.kind !== 'point')
+      .map((s) => ({ shape: s, d: path(s.feature) ?? '' }));
     for (const s of shapes) if (s.interactive) anchors.set(s.id, anchorOf(path, s.feature));
-    return { sphere: path({ type: 'Sphere' }) ?? '', drawn, anchors };
+    const sphere = path({ type: 'Sphere' }) ?? '';
+    return { sphere, drawn, anchors, targets: hitTargets(shapes, path) };
   }, [shapes, width, height]);
 
-  const onZoom = useCallback((): void => undefined, []);
+  const onZoom = useCallback((t: ViewTransform): void => applyHitSizes(svgRef.current, t.k), []);
   const controls = useZoom(svgRef, layerRef, width, height, onZoom);
+
+  // Newly rendered tap circles start at zoom-1 sizes; correct them for the current zoom.
+  useLayoutEffect(() => {
+    applyHitSizes(svgRef.current, controls.current().k);
+  }, [geometry, controls]);
+
+  const select = (id: string): void => onSelect?.(id);
 
   const focusShape = (id: string | undefined): void => {
     if (!id) return;
@@ -79,8 +108,12 @@ export function MapView({
 
   // Entering the map by keyboard focuses the shape nearest the centre of the view.
   const onSvgFocus = (): void => {
-    if (activeId && geometry.anchors.has(activeId)) focusShape(activeId);
-    else focusShape(nearestAnchor(geometry.anchors, [width / 2, height / 2]));
+    if (activeId && geometry.anchors.has(activeId)) {
+      focusShape(activeId);
+      return;
+    }
+    const { k, x, y } = controls.current();
+    focusShape(nearestAnchor(geometry.anchors, [(width / 2 - x) / k, (height / 2 - y) / k]));
   };
 
   const onKeyDown = (event: KeyboardEvent<SVGSVGElement>): void => {
@@ -100,7 +133,7 @@ export function MapView({
       focusShape(nextInDirection(geometry.anchors, id, direction));
     } else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      onSelect?.(id);
+      select(id);
     }
   };
 
@@ -135,13 +168,14 @@ export function MapView({
                 role="button"
                 aria-label={shapeLabel(shape.id)}
                 tabIndex={shape.id === activeId ? 0 : -1}
-                onClick={() => onSelect?.(shape.id)}
+                onClick={() => select(shape.id)}
                 onFocus={() => setActiveId(shape.id)}
               />
             ) : (
               <path key={shape.id} d={d} className={className} aria-hidden="true" />
             );
           })}
+          <HitLayer targets={geometry.targets} states={states} onSelect={select} />
         </g>
       </svg>
       <ZoomButtons

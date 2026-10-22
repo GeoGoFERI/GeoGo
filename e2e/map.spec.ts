@@ -49,3 +49,23 @@ test('zoom buttons change the map transform and reset restores it', async ({ pag
   await page.mouse.up();
   expect(await layer.getAttribute('transform')).not.toBe(before);
 });
+
+test('a tiny country can be tapped near it thanks to its circular hit area', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Začni' }).click();
+  const hit = page.locator('circle[data-hit-id="442"]');
+  await expect(hit).toHaveCount(1);
+  const box = await hit.boundingBox();
+  if (!box) throw new Error('no hit circle');
+  // The circle is at least 44 px across on screen.
+  expect(box.width).toBeGreaterThanOrEqual(43);
+  // Tap 15 px off-centre: still Luxembourg.
+  await page.mouse.click(box.x + box.width / 2 + 15, box.y + box.height / 2);
+  await expect(page.getByTestId('last-clicked')).toHaveText('442');
+
+  // After zooming in the circle keeps the same size on screen.
+  await page.getByRole('button', { name: 'Povečaj' }).click();
+  await expect(page.locator('g.map__layer')).toHaveAttribute('transform', /scale\(1\.[5-6]/);
+  const zoomed = await hit.boundingBox();
+  expect(Math.abs((zoomed?.width ?? 0) - box.width)).toBeLessThan(2);
+});
