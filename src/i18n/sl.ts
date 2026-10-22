@@ -7,7 +7,12 @@ export const sl = {
   again: 'Še enkrat',
   atlas: 'Moj atlas',
   back: 'Nazaj',
-  mapLabel: 'Zemljevid sveta',
+  mapLabels: {
+    map: 'Zemljevid',
+    zoomIn: 'Povečaj',
+    zoomOut: 'Pomanjšaj',
+    reset: 'Pokaži ves zemljevid',
+  },
   mapShape: 'Območje na zemljevidu',
   placeholderPlay: 'Tukaj bo igra.',
   placeholderFact: 'Tukaj bo zanimivost.',

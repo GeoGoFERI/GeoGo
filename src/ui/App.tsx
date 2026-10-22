@@ -51,7 +51,7 @@ export function App(): ReactElement {
             <p>{sl.placeholderPlay}</p>
             <MapView
               shapes={worldCountryShapes}
-              label={sl.mapLabel}
+              labels={sl.mapLabels}
               shapeLabel={() => sl.mapShape}
               onSelect={(id) => setLastClicked(id)}
             />
