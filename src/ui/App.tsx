@@ -52,6 +52,7 @@ export function App(): ReactElement {
             <MapView
               shapes={worldCountryShapes}
               labels={sl.mapLabels}
+              region="europe"
               shapeLabel={() => sl.mapShape}
               onSelect={(id) => setLastClicked(id)}
             />

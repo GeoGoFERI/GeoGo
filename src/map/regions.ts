@@ -1,4 +1,5 @@
-import type { GeoProjection } from 'd3-geo';
+import { geoBounds, type GeoProjection } from 'd3-geo';
+import type { Feature, Geometry } from 'geojson';
 
 // Map regions the game zooms to.
 export type RegionId = 'world' | 'europe' | 'asia' | 'africa' | 'namerica' | 'samerica' | 'oceania';
@@ -78,4 +79,20 @@ export function fitTransform(
   const cx = (x0 + x1) / 2;
   const cy = (y0 + y1) / 2;
   return { k, x: width / 2 - cx * k, y: height / 2 - cy * k };
+}
+
+// A lon/lat box around a feature, grown to at least `minSpan` degrees in each direction so that
+// zooming to it also shows the neighbourhood.
+export function contextBox(
+  feature: Feature<Geometry>,
+  minSpan: number,
+): [number, number, number, number] {
+  const [[west, south], [east, north]] = geoBounds(feature);
+  // A box crossing the antimeridian is unwrapped so east > west.
+  const eastUnwrapped = east >= west ? east : east + 360;
+  const cx = (west + eastUnwrapped) / 2;
+  const cy = (south + north) / 2;
+  const halfLon = Math.max((eastUnwrapped - west) / 2, minSpan / 2);
+  const halfLat = Math.max((north - south) / 2, minSpan / 4);
+  return [cx - halfLon, Math.max(cy - halfLat, -89), cx + halfLon, Math.min(cy + halfLat, 89)];
 }

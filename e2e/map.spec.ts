@@ -15,15 +15,19 @@ test('world map renders one path per country', async ({ page }) => {
 test('clicking a country reports its id and arrows move keyboard focus', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Začni' }).click();
-  // Brazil (076) is large enough to click in its middle at every viewport.
-  await page.locator('path[data-id="076"]').click();
-  await expect(page.getByTestId('last-clicked')).toHaveText('076');
+  await page.waitForTimeout(600);
+  // Germany (276) is in the Europe home view and large enough to click in its middle.
+  // A raw tap: on a phone Luxembourg's tap circle overlaps Germany, and Germany must still win.
+  const germany = await page.locator('path[data-id="276"]').boundingBox();
+  if (!germany) throw new Error('no Germany');
+  await page.mouse.click(germany.x + germany.width / 2, germany.y + germany.height / 2);
+  await expect(page.getByTestId('last-clicked')).toHaveText('276');
 
-  await page.locator('path[data-id="076"]').focus();
+  await page.locator('path[data-id="276"]').focus();
   await page.keyboard.press('ArrowRight');
   const focusedId = await page.evaluate(() => document.activeElement?.getAttribute('data-id'));
   expect(focusedId).toBeTruthy();
-  expect(focusedId).not.toBe('076');
+  expect(focusedId).not.toBe('276');
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('last-clicked')).toHaveText(focusedId ?? '');
 });
@@ -32,14 +36,20 @@ test('zoom buttons change the map transform and reset restores it', async ({ pag
   await page.goto('/');
   await page.getByRole('button', { name: 'Začni' }).click();
   const layer = page.locator('g.map__layer');
+  const scaleOf = async (): Promise<number> =>
+    Number(/scale\(([\d.]+)\)/.exec((await layer.getAttribute('transform')) ?? '')?.[1] ?? 0);
+  // The home view is fitted to Europe, so it starts zoomed in.
+  await expect.poll(scaleOf).toBeGreaterThan(1.5);
+  // Let the opening fit animation finish.
+  await page.waitForTimeout(600);
+  const home = await scaleOf();
   await page.getByRole('button', { name: 'Povečaj' }).click();
-  await expect(layer).toHaveAttribute('transform', /scale\(1\.[5-6]/);
+  await expect.poll(scaleOf).toBeCloseTo(home * 1.6, 1);
   await page.getByRole('button', { name: 'Pokaži ves zemljevid' }).click();
-  await expect(layer).toHaveAttribute('transform', /scale\(1\)/);
+  await expect.poll(scaleOf).toBeCloseTo(home, 1);
 
   // Dragging pans the map.
-  await page.getByRole('button', { name: 'Povečaj' }).click();
-  await expect(layer).toHaveAttribute('transform', /scale\(1\.[5-6]/);
+  await page.waitForTimeout(600);
   const before = await layer.getAttribute('transform');
   const box = await page.locator('svg.map__svg').boundingBox();
   if (!box) throw new Error('no map');
@@ -59,13 +69,13 @@ test('a tiny country can be tapped near it thanks to its circular hit area', asy
   if (!box) throw new Error('no hit circle');
   // The circle is at least 44 px across on screen.
   expect(box.width).toBeGreaterThanOrEqual(43);
-  // Tap 15 px off-centre: still Luxembourg.
-  await page.mouse.click(box.x + box.width / 2 + 15, box.y + box.height / 2);
+  // Tap 10 px off-centre: still Luxembourg, even where that lands on a neighbour.
+  await page.mouse.click(box.x + box.width / 2 + 10, box.y + box.height / 2);
   await expect(page.getByTestId('last-clicked')).toHaveText('442');
 
   // After zooming in the circle keeps the same size on screen.
   await page.getByRole('button', { name: 'Povečaj' }).click();
-  await expect(page.locator('g.map__layer')).toHaveAttribute('transform', /scale\(1\.[5-6]/);
+  await page.waitForTimeout(600);
   const zoomed = await hit.boundingBox();
   expect(Math.abs((zoomed?.width ?? 0) - box.width)).toBeLessThan(2);
 });

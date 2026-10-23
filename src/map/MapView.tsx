@@ -1,11 +1,14 @@
 import {
   useCallback,
+  useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type KeyboardEvent,
   type ReactElement,
+  type Ref,
 } from 'react';
 import { geoPath } from 'd3-geo';
 import { createProjection } from './projection';
@@ -16,7 +19,16 @@ import { hitSizes, hitTargets } from './hitAreas';
 import { HitLayer } from './HitLayer';
 import { useZoom } from './useZoom';
 import { ZoomButtons } from './ZoomButtons';
-import type { ViewTransform } from './regions';
+import { mainPart } from './anchors';
+import {
+  REGION_BOXES,
+  contextBox,
+  fitTransform,
+  projectBox,
+  type PixelBox,
+  type RegionId,
+  type ViewTransform,
+} from './regions';
 import type { MapShape, ShapeState } from './types';
 import './map.css';
 
@@ -29,6 +41,17 @@ export interface MapViewProps {
   labels: { map: string; zoomIn: string; zoomOut: string; reset: string };
   // Accessible name of one shape.
   shapeLabel: (id: string) => string;
+  // The home view: fitted on mount, on resize, when it changes and by the reset button.
+  region?: RegionId;
+  ref?: Ref<MapHandle>;
+}
+
+// Imperative view control for the game (help zoom) and tests.
+export interface MapHandle {
+  fitToRegion: (region: RegionId) => void;
+  // Zooms to a shape with its surroundings: at least `contextDeg` degrees around its centre.
+  fitToShape: (id: string, contextDeg?: number) => void;
+  reset: () => void;
 }
 
 const ARROWS: Record<string, Direction> = {
@@ -60,6 +83,8 @@ export function MapView({
   onSelect,
   labels,
   shapeLabel,
+  region = 'world',
+  ref,
 }: MapViewProps): ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -71,14 +96,16 @@ export function MapView({
   // Path strings, anchors and tap targets depend only on the shapes and the container size.
   const geometry = useMemo(() => {
     const anchors = new Map<string, [number, number]>();
-    if (width === 0 || height === 0) return { sphere: '', drawn: [], anchors, targets: [] };
-    const path = geoPath(createProjection(width, height));
+    const projection = createProjection(Math.max(width, 1), Math.max(height, 1));
+    const path = geoPath(projection);
+    if (width === 0 || height === 0)
+      return { sphere: '', drawn: [], anchors, targets: [], path, projection };
     const drawn = shapes
       .filter((s) => s.kind !== 'point')
       .map((s) => ({ shape: s, d: path(s.feature) ?? '' }));
     for (const s of shapes) if (s.interactive) anchors.set(s.id, anchorOf(path, s.feature));
     const sphere = path({ type: 'Sphere' }) ?? '';
-    return { sphere, drawn, anchors, targets: hitTargets(shapes, path) };
+    return { sphere, drawn, anchors, targets: hitTargets(shapes, path), path, projection };
   }, [shapes, width, height]);
 
   const onZoom = useCallback((t: ViewTransform): void => applyHitSizes(svgRef.current, t.k), []);
@@ -88,6 +115,34 @@ export function MapView({
   useLayoutEffect(() => {
     applyHitSizes(svgRef.current, controls.current().k);
   }, [geometry, controls]);
+
+  const handle = useMemo<MapHandle>(() => {
+    const fitBox = (box: PixelBox, maxScale?: number): void =>
+      controls.transformTo(fitTransform(box, width, height, 0.04, maxScale));
+    const fitToRegion = (r: RegionId): void =>
+      fitBox(projectBox(geometry.projection, REGION_BOXES[r]));
+    return {
+      fitToRegion,
+      fitToShape: (id, contextDeg = 14) => {
+        const shape = shapes.find((s) => s.id === id);
+        if (!shape) return;
+        fitBox(projectBox(geometry.projection, contextBox(mainPart(shape.feature), contextDeg)));
+      },
+      reset: () => fitToRegion(region),
+    };
+  }, [controls, geometry, shapes, width, height, region]);
+
+  useImperativeHandle(ref, () => handle, [handle]);
+
+  // Fit the home region whenever it or the projection changes. The latest handle is read
+  // through a ref so that a new shapes array alone does not move the view.
+  const handleRef = useRef(handle);
+  useLayoutEffect(() => {
+    handleRef.current = handle;
+  }, [handle]);
+  useEffect(() => {
+    if (width > 0 && height > 0) handleRef.current.fitToRegion(region);
+  }, [region, width, height]);
 
   const select = (id: string): void => onSelect?.(id);
 
@@ -182,7 +237,7 @@ export function MapView({
         labels={labels}
         onZoomIn={() => controls.zoomBy(1.6)}
         onZoomOut={() => controls.zoomBy(1 / 1.6)}
-        onReset={() => controls.transformTo({ k: 1, x: 0, y: 0 })}
+        onReset={handle.reset}
       />
     </div>
   );
