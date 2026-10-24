@@ -1,8 +1,10 @@
 import { geoBounds, type GeoProjection } from 'd3-geo';
 import type { Feature, Geometry } from 'geojson';
 
-// Map regions the game zooms to.
-export type RegionId = 'world' | 'europe' | 'asia' | 'africa' | 'namerica' | 'samerica' | 'oceania';
+import type { Region } from '../core/item';
+
+// Map regions the game zooms to; the ids are defined by the core item model.
+export type RegionId = Region;
 
 // Hard-coded lon/lat boxes [west, south, east, north].
 export const REGION_BOXES: Record<RegionId, [number, number, number, number]> = {
