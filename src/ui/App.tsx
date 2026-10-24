@@ -1,99 +1,91 @@
-import { useEffect, useReducer, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useReducer, useState, type ReactElement } from 'react';
+import type { LevelId } from '../core/item';
+import { LEVELS } from '../core/levels';
+import { isMastered } from '../core/leitner';
+import { loadProgress, saveProgress } from '../core/progress';
+import { browserStore } from '../core/storage';
 import { sl } from '../i18n/sl';
-import { initialScreen, screenReducer } from './screens';
-import { MapView } from '../map/MapView';
-import { loadWorldShapes } from './devShapes';
-import type { MapShape } from '../map/types';
+import { gameReducer, type GameState } from './game';
+import { levelItems, makeRng, newRound } from './newRound';
+import { readTestHooks } from './testHooks';
+import { useGameData } from './useGameData';
+import { StartScreen, type LevelCardInfo } from './StartScreen';
 import logoUrl from './assets/logo.webp';
 import './styles/fonts';
 import './styles/tokens.css';
 import './styles/global.css';
 import './styles/app.css';
 
+const store = browserStore();
+const hooks = readTestHooks(window.location.search);
+const rng = makeRng(hooks);
+
+function initState(): GameState {
+  return { view: { screen: 'start' }, progress: loadProgress(store) };
+}
+
 export function App(): ReactElement {
-  const [screen, dispatch] = useReducer(screenReducer, initialScreen);
-  // Temporary readout for the map engine phase.
-  const [lastClicked, setLastClicked] = useState('');
-  const [shapes, setShapes] = useState<MapShape[]>([]);
+  const [state, dispatch] = useReducer(gameReducer, undefined, initState);
+  const [selected, setSelected] = useState<LevelId>(3);
+  const dataState = useGameData();
+  const data = dataState.status === 'ready' ? dataState.data : undefined;
+  const { view, progress } = state;
+
+  // Progress is saved whenever it changes (after each round).
   useEffect(() => {
-    void loadWorldShapes().then(setShapes);
-  }, []);
+    saveProgress(store, progress);
+  }, [progress]);
+
+  const levelCards = useMemo<LevelCardInfo[]>(
+    () =>
+      LEVELS.filter((l) => !l.stretch).map((l) => {
+        const items = levelItems(data, l.id);
+        return {
+          level: l.id,
+          available: data === undefined ? l.id === 3 : items.length > 0,
+          mastered: items.filter((i) => isMastered(progress.items[i.id])).length,
+          total: items.length,
+        };
+      }),
+    [data, progress],
+  );
+
+  const startLevel = (level: LevelId): void => {
+    if (!data) return;
+    dispatch({ type: 'startRound', level, questions: newRound(level, data, progress, hooks, rng) });
+  };
+
+  const status =
+    dataState.status === 'loading'
+      ? sl.loading
+      : dataState.status === 'error'
+        ? sl.loadFailed
+        : undefined;
 
   return (
     <div className="app">
-      <header className="app__header">
-        <button
-          type="button"
-          className="app__logo-btn"
-          onClick={() => dispatch({ type: 'home' })}
-          aria-label={sl.appName}
-        >
-          <img src={logoUrl} alt="" className="app__logo" />
-        </button>
-      </header>
+      {view.screen !== 'start' && (
+        <header className="app__header">
+          <button
+            type="button"
+            className="app__logo-btn"
+            onClick={() => dispatch({ type: 'home' })}
+            aria-label={sl.home}
+          >
+            <img src={logoUrl} alt="" className="app__logo" />
+          </button>
+        </header>
+      )}
       <main className="app__main">
-        {screen.name === 'start' && (
-          <section className="placeholder">
-            <h1>{sl.appName}</h1>
-            <button
-              type="button"
-              className="btn btn--big"
-              onClick={() => dispatch({ type: 'play' })}
-            >
-              {sl.start}
-            </button>
-            <button
-              type="button"
-              className="btn btn--plain"
-              onClick={() => dispatch({ type: 'openAtlas' })}
-            >
-              {sl.atlas}
-            </button>
-          </section>
-        )}
-        {screen.name === 'play' && (
-          <section className="placeholder placeholder--map">
-            <p>{sl.placeholderPlay}</p>
-            <MapView
-              shapes={shapes}
-              labels={sl.mapLabels}
-              region="europe"
-              shapeLabel={() => sl.mapShape}
-              onSelect={(id) => setLastClicked(id)}
-            />
-            <p data-testid="last-clicked">{lastClicked}</p>
-            <button type="button" className="btn" onClick={() => dispatch({ type: 'answered' })}>
-              {sl.next}
-            </button>
-          </section>
-        )}
-        {screen.name === 'fact' && (
-          <section className="placeholder">
-            <p>{sl.placeholderFact}</p>
-            <button type="button" className="btn" onClick={() => dispatch({ type: 'roundDone' })}>
-              {sl.next}
-            </button>
-          </section>
-        )}
-        {screen.name === 'summary' && (
-          <section className="placeholder">
-            <p>{sl.placeholderSummary}</p>
-            <button type="button" className="btn" onClick={() => dispatch({ type: 'home' })}>
-              {sl.again}
-            </button>
-          </section>
-        )}
-        {screen.name === 'atlas' && (
-          <section className="placeholder">
-            <p>{sl.placeholderAtlas}</p>
-            <button
-              type="button"
-              className="btn btn--plain"
-              onClick={() => dispatch({ type: 'home' })}
-            >
-              {sl.back}
-            </button>
-          </section>
+        {view.screen === 'start' && (
+          <StartScreen
+            levels={levelCards}
+            selected={selected}
+            onSelect={setSelected}
+            onStart={() => startLevel(selected)}
+            onAtlas={() => dispatch({ type: 'openAtlas' })}
+            {...(status ? { status } : {})}
+          />
         )}
       </main>
     </div>

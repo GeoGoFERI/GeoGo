@@ -30,6 +30,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.0",
+    "@twemoji/svg": "^15.0.0",
     "@types/d3-geo": "^3.1.1",
     "@types/d3-selection": "^3.0.12",
     "@types/d3-transition": "^3.0.9",

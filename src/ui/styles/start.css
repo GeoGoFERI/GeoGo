@@ -1,0 +1,96 @@
+.start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 16px 32px;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.start__logo {
+  width: min(220px, 52vw);
+  height: auto;
+}
+
+.start__title {
+  text-align: center;
+}
+
+.start__levels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.level-card {
+  width: 100%;
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: var(--border);
+  border-radius: var(--radius-card);
+  background: var(--geogo-paper);
+  box-shadow: var(--shadow-hard);
+  color: var(--geogo-navy);
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+  transition: transform var(--motion-fast);
+}
+
+.level-card:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--geogo-navy);
+}
+
+/* Selected: yellow fill plus a thicker border, so it is not colour alone. */
+.level-card[aria-pressed='true'] {
+  background: var(--geogo-yellow);
+  outline: 3px solid var(--geogo-navy);
+  outline-offset: -6px;
+}
+
+.level-card:disabled {
+  cursor: default;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.level-card__name {
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.level-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-body);
+}
+
+.start__status {
+  margin: 0;
+}
+
+.start__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
