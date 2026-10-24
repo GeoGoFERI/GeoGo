@@ -1,7 +1,6 @@
 import { feature } from 'topojson-client';
 import type { Feature, Geometry } from 'geojson';
 import type { GeometryCollection, Topology } from 'topojson-specification';
-import countries110 from 'world-atlas/countries-110m.json';
 
 // A country polygon from world-atlas with a stable key.
 export type CountryFeature = Feature<Geometry, { name: string }> & { id: string };
@@ -23,5 +22,8 @@ export function countryFeatures(topology: WorldTopology): CountryFeature[] {
   }));
 }
 
-// The 110m world, bundled with the app.
-export const world110 = countries110 as unknown as WorldTopology;
+// The 50m world, loaded as its own chunk so the start screen paints first.
+export async function loadWorld50(): Promise<WorldTopology> {
+  const module = await import('world-atlas/countries-50m.json');
+  return module.default as unknown as WorldTopology;
+}

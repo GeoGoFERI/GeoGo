@@ -10,24 +10,31 @@ export interface HitLayerProps {
 
 // Dots and invisible tap circles for tiny places.
 export function HitLayer({ targets, states, onSelect }: HitLayerProps): ReactElement {
-  // A tap circle can overlap a neighbouring country. If the tap is inside that country's real
-  // outline and not right on the tiny place, the neighbour wins: the circle forgives near
-  // misses over sea or borders but must not steal clear taps on a bigger country.
-  const onCircleClick = (event: MouseEvent<SVGCircleElement>, id: string): void => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const dx = event.clientX - (rect.left + rect.width / 2);
-    const dy = event.clientY - (rect.top + rect.height / 2);
-    if (Math.hypot(dx, dy) > INNER_RADIUS_PX) {
-      const under = document
-        .elementsFromPoint(event.clientX, event.clientY)
-        .find((el) => el instanceof SVGPathElement && el.dataset.id && el.dataset.id !== id);
-      const underId = under instanceof SVGPathElement ? under.dataset.id : undefined;
-      if (underId) {
-        onSelect(underId);
+  // Tap circles can overlap each other and neighbouring countries. Resolution order:
+  // 1. the nearest tiny place whose centre is within INNER_RADIUS_PX wins outright;
+  // 2. otherwise a real country outline under the tap wins (circles must not steal clear taps);
+  // 3. otherwise the nearest tiny place wins (a forgiving near miss over sea or a border).
+  const onCircleClick = (event: MouseEvent<SVGCircleElement>): void => {
+    const { clientX, clientY } = event;
+    const under = document.elementsFromPoint(clientX, clientY);
+    let nearest: { id: string; dist: number } | undefined;
+    for (const el of under) {
+      const id = el instanceof SVGCircleElement ? el.dataset.hitId : undefined;
+      if (!id) continue;
+      const r = el.getBoundingClientRect();
+      const dist = Math.hypot(clientX - (r.left + r.width / 2), clientY - (r.top + r.height / 2));
+      if (!nearest || dist < nearest.dist) nearest = { id, dist };
+    }
+    if (!nearest) return;
+    if (nearest.dist > INNER_RADIUS_PX) {
+      const path = under.find((el) => el instanceof SVGPathElement && el.dataset.id);
+      const pathId = path instanceof SVGPathElement ? path.dataset.id : undefined;
+      if (pathId) {
+        onSelect(pathId);
         return;
       }
     }
-    onSelect(id);
+    onSelect(nearest.id);
   };
 
   return (
@@ -50,7 +57,7 @@ export function HitLayer({ targets, states, onSelect }: HitLayerProps): ReactEle
               cy={t.center[1]}
               r={HIT_RADIUS_PX}
               aria-hidden="true"
-              onClick={(e) => onCircleClick(e, t.id)}
+              onClick={onCircleClick}
             />
           </g>
         );

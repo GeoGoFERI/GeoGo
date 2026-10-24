@@ -1,8 +1,9 @@
-import { useReducer, useState, type ReactElement } from 'react';
+import { useEffect, useReducer, useState, type ReactElement } from 'react';
 import { sl } from '../i18n/sl';
 import { initialScreen, screenReducer } from './screens';
 import { MapView } from '../map/MapView';
-import { worldCountryShapes } from './devShapes';
+import { loadWorldShapes } from './devShapes';
+import type { MapShape } from '../map/types';
 import logoUrl from './assets/logo.webp';
 import './styles/fonts';
 import './styles/tokens.css';
@@ -13,6 +14,10 @@ export function App(): ReactElement {
   const [screen, dispatch] = useReducer(screenReducer, initialScreen);
   // Temporary readout for the map engine phase.
   const [lastClicked, setLastClicked] = useState('');
+  const [shapes, setShapes] = useState<MapShape[]>([]);
+  useEffect(() => {
+    void loadWorldShapes().then(setShapes);
+  }, []);
 
   return (
     <div className="app">
@@ -50,7 +55,7 @@ export function App(): ReactElement {
           <section className="placeholder placeholder--map">
             <p>{sl.placeholderPlay}</p>
             <MapView
-              shapes={worldCountryShapes}
+              shapes={shapes}
               labels={sl.mapLabels}
               region="europe"
               shapeLabel={() => sl.mapShape}

@@ -63,6 +63,8 @@ test('zoom buttons change the map transform and reset restores it', async ({ pag
 test('a tiny country can be tapped near it thanks to its circular hit area', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Začni' }).click();
+  // Wait for the opening fit-to-Europe animation.
+  await page.waitForTimeout(700);
   const hit = page.locator('circle[data-hit-id="442"]');
   await expect(hit).toHaveCount(1);
   const box = await hit.boundingBox();

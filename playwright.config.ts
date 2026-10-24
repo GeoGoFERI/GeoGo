@@ -3,6 +3,8 @@ import { defineConfig } from '@playwright/test';
 // The e2e tests run against the production build served by `vite preview`.
 export default defineConfig({
   testDir: 'e2e',
+  // Performance measurements run only on demand (see e2e/perf).
+  testIgnore: process.env.PERF ? [] : ['**/perf/**'],
   timeout: 60_000,
   fullyParallel: false,
   workers: 1,
