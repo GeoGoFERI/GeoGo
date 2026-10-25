@@ -41,6 +41,8 @@ export default defineConfig({
       },
     }),
   ],
+  // The 50m map data is one ~760 KB chunk by design; it loads in the background.
+  build: { chunkSizeWarningLimit: 800 },
   server: { port: 5173, strictPort: true },
   preview: { port: 4173, strictPort: true },
 });

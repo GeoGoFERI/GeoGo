@@ -94,3 +94,37 @@
     fill: var(--map-hover);
   }
 }
+
+.shape--hint {
+  fill: var(--geogo-sky);
+  stroke-width: 2.5px;
+}
+
+/* Help tier 3: the target blinks yellow with a thick outline. Static under reduced motion. */
+.shape--flash {
+  fill: var(--map-hover);
+  stroke-width: 4px;
+  animation: flash 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes flash {
+  from {
+    fill: var(--map-hover);
+  }
+  to {
+    fill: var(--map-land);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shape--flash {
+    animation: none;
+  }
+}
+
+.hit-dot.shape--flash,
+.hit-dot.shape--correct,
+.hit-dot.shape--wrong,
+.hit-dot.shape--hint {
+  stroke-width: 3px;
+}

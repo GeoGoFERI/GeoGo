@@ -3,7 +3,7 @@ import { select } from 'd3-selection';
 import 'd3-transition';
 import { zoom, zoomIdentity, type D3ZoomEvent, type ZoomBehavior } from 'd3-zoom';
 import { prefersReducedMotion } from './motion';
-import type { ViewTransform } from './regions';
+import type { PixelBox, ViewTransform } from './regions';
 
 export const MAX_ZOOM = 40;
 const DURATION = 450;
@@ -23,6 +23,8 @@ export function useZoom(
   layerRef: RefObject<SVGGElement | null>,
   width: number,
   height: number,
+  // Layer-space box the view may not leave: the projected sphere.
+  bounds: PixelBox,
   onZoom: (t: ViewTransform) => void,
 ): ZoomControls {
   const behaviourRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -38,15 +40,13 @@ export function useZoom(
     if (!svg || !layer || width === 0 || height === 0) return undefined;
     const behaviour = zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, MAX_ZOOM])
-      // The map can never be dragged out of the frame.
+      // The view can never leave the globe; when the globe is smaller than the frame
+      // (the world view on a tall phone) d3 keeps it centred.
       .extent([
         [0, 0],
         [width, height],
       ])
-      .translateExtent([
-        [0, 0],
-        [width, height],
-      ])
+      .translateExtent(bounds)
       // A little wobble while tapping should still count as a tap, not a drag.
       .clickDistance(6)
       .tapDistance(12)
@@ -67,6 +67,8 @@ export function useZoom(
       selection.on('.zoom', null);
       behaviourRef.current = null;
     };
+    // Bounds change only with the size, which is already a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [svgRef, layerRef, width, height]);
 
   return useMemo<ZoomControls>(() => {

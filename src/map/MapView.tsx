@@ -98,18 +98,19 @@ export function MapView({
     const anchors = new Map<string, [number, number]>();
     const projection = createProjection(Math.max(width, 1), Math.max(height, 1));
     const path = geoPath(projection);
+    const bounds = path.bounds({ type: 'Sphere' }) as PixelBox;
     if (width === 0 || height === 0)
-      return { sphere: '', drawn: [], anchors, targets: [], path, projection };
+      return { sphere: '', drawn: [], anchors, targets: [], path, projection, bounds };
     const drawn = shapes
       .filter((s) => s.kind !== 'point')
       .map((s) => ({ shape: s, d: path(s.feature) ?? '' }));
     for (const s of shapes) if (s.interactive) anchors.set(s.id, anchorOf(path, s.feature));
     const sphere = path({ type: 'Sphere' }) ?? '';
-    return { sphere, drawn, anchors, targets: hitTargets(shapes, path), path, projection };
+    return { sphere, drawn, anchors, targets: hitTargets(shapes, path), path, projection, bounds };
   }, [shapes, width, height]);
 
   const onZoom = useCallback((t: ViewTransform): void => applyHitSizes(svgRef.current, t.k), []);
-  const controls = useZoom(svgRef, layerRef, width, height, onZoom);
+  const controls = useZoom(svgRef, layerRef, width, height, geometry.bounds, onZoom);
 
   // Newly rendered tap circles start at zoom-1 sizes; correct them for the current zoom.
   useLayoutEffect(() => {

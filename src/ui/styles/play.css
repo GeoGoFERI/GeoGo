@@ -1,0 +1,230 @@
+.play {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'home prompt'
+    'dots dots';
+  align-items: center;
+  gap: 6px 12px;
+  padding: 8px 12px;
+  background: var(--geogo-sky);
+  border-bottom: var(--border);
+}
+
+.banner__home {
+  grid-area: home;
+  width: var(--touch);
+  height: var(--touch);
+}
+
+.banner__prompt {
+  grid-area: prompt;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-width: 0;
+}
+
+.banner__label {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.banner__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: var(--text-heading);
+  line-height: 1.1;
+}
+
+.flag {
+  width: 36px;
+  height: 36px;
+  flex: none;
+}
+
+.banner__dots {
+  grid-area: dots;
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--geogo-navy);
+  background: var(--geogo-paper);
+}
+
+.dot--done {
+  background: var(--geogo-navy);
+}
+
+/* The current question: bigger and yellow, so not by colour alone. */
+.dot--current {
+  width: 18px;
+  height: 18px;
+  margin-top: -2px;
+  background: var(--geogo-yellow);
+}
+
+.play__map {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.play__toasts {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92%, 460px);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: var(--border);
+  border-radius: var(--radius-card);
+  font-weight: 600;
+  box-shadow: var(--shadow-hard);
+}
+
+.toast svg {
+  flex: none;
+}
+
+.toast--wrong {
+  background: var(--geogo-orange);
+}
+
+.toast--hint {
+  background: var(--geogo-yellow);
+}
+
+.shake {
+  animation: shake var(--motion-fast) ease-in-out;
+}
+
+@keyframes shake {
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.btn--help {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  background: var(--geogo-yellow);
+  min-height: 52px;
+  z-index: 3;
+}
+
+.btn--help:hover {
+  background: var(--geogo-orange);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shake {
+    animation: none;
+  }
+}
+
+.fact {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: min(calc(100% - 24px), 480px);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border: var(--border);
+  border-radius: var(--radius-card);
+  background: var(--geogo-paper);
+  box-shadow: var(--shadow-hard);
+  text-align: center;
+}
+
+.fact__praise {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 4px 14px;
+  border: 2px solid var(--geogo-navy);
+  border-radius: 999px;
+  background: var(--geogo-green);
+  font-weight: 700;
+}
+
+.confetti {
+  position: absolute;
+  left: 50%;
+  bottom: 160px;
+  width: 0;
+  height: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.confetti__piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--geogo-navy);
+  border-radius: 3px;
+  opacity: 0;
+  animation: confetti 280ms ease-out forwards;
+}
+
+@keyframes confetti {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) rotate(160deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+}

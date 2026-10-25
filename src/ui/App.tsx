@@ -10,6 +10,9 @@ import { levelItems, makeRng, newRound } from './newRound';
 import { readTestHooks } from './testHooks';
 import { useGameData } from './useGameData';
 import { StartScreen, type LevelCardInfo } from './StartScreen';
+import { PlayScreen } from './PlayScreen';
+import { FactCard } from './FactCard';
+import { Confetti } from './Confetti';
 import logoUrl from './assets/logo.webp';
 import './styles/fonts';
 import './styles/tokens.css';
@@ -64,7 +67,7 @@ export function App(): ReactElement {
 
   return (
     <div className="app">
-      {view.screen !== 'start' && (
+      {(view.screen === 'atlas' || view.screen === 'summary') && (
         <header className="app__header">
           <button
             type="button"
@@ -85,6 +88,30 @@ export function App(): ReactElement {
             onStart={() => startLevel(selected)}
             onAtlas={() => dispatch({ type: 'openAtlas' })}
             {...(status ? { status } : {})}
+          />
+        )}
+        {(view.screen === 'play' || view.screen === 'fact') && data && (
+          <PlayScreen
+            round={view.round}
+            question={view.question}
+            data={data}
+            onSelect={(id) => dispatch({ type: 'click', id })}
+            onHelp={() => dispatch({ type: 'help' })}
+            onHome={() => dispatch({ type: 'home' })}
+            {...(view.screen === 'fact'
+              ? {
+                  factCard: (
+                    <>
+                      <Confetti />
+                      <FactCard
+                        name={data.nameOf(view.question.question.promptId)?.nameSl ?? ''}
+                        praise={sl.correct[view.round.index % sl.correct.length] ?? sl.correct[0]}
+                        onNext={() => dispatch({ type: 'next', items: data.itemById })}
+                      />
+                    </>
+                  ),
+                }
+              : {})}
           />
         )}
       </main>
