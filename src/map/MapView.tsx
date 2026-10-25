@@ -123,8 +123,18 @@ export function MapView({
       const visible = Math.max(height - bottomInset, height * 0.3);
       controls.transformTo(fitTransform(box, width, visible));
     };
+    // Regions may be cropped by up to 35 % on the narrow side (see fitTransform).
     const fitToRegion = (r: RegionId): void =>
-      fitBox(projectBox(geometry.projection, REGION_BOXES[r]));
+      controls.transformTo(
+        fitTransform(
+          projectBox(geometry.projection, REGION_BOXES[r]),
+          width,
+          height,
+          0.04,
+          40,
+          1.35,
+        ),
+      );
     return {
       fitToRegion,
       fitToShape: (id, contextDeg = 14, bottomInset = 0) => {

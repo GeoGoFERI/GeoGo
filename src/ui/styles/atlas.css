@@ -1,0 +1,57 @@
+.atlas {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.atlas__head {
+  padding: 12px 16px;
+  text-align: center;
+}
+
+.atlas__head p {
+  margin: 4px 0;
+}
+
+.atlas__counts {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  font-weight: 600;
+}
+
+.atlas__map {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 280px;
+  border-top: var(--border);
+}
+
+.atlas__picked {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: var(--border);
+  border-radius: 999px;
+  background: var(--geogo-paper);
+  font-weight: 700;
+  box-shadow: var(--shadow-hard);
+  pointer-events: none;
+}
+
+.atlas__back {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+}

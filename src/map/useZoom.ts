@@ -77,7 +77,16 @@ export function useZoom(
       const svg = svgRef.current;
       const behaviour = behaviourRef.current;
       if (!svg || !behaviour) return;
-      const target = zoomIdentity.translate(t.x, t.y).scale(t.k);
+      // zoom.transform does not apply the translate extent by itself, so clamp here:
+      // a region fit must not show empty space beyond the globe.
+      const target = behaviour.constrain()(
+        zoomIdentity.translate(t.x, t.y).scale(t.k),
+        [
+          [0, 0],
+          [width, height],
+        ],
+        behaviour.translateExtent(),
+      );
       const d = duration();
       if (d === 0) select(svg).call(behaviour.transform, target);
       else select(svg).transition().duration(d).call(behaviour.transform, target);

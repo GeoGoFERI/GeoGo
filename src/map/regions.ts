@@ -69,15 +69,16 @@ export function fitTransform(
   height: number,
   padding = 0.04,
   maxScale = 40,
+  crop = 1,
 ): ViewTransform {
   const [[x0, y0], [x1, y1]] = box;
   const boxW = Math.max(x1 - x0, 1);
   const boxH = Math.max(y1 - y0, 1);
   const usable = 1 - 2 * padding;
-  const k = Math.min(
-    Math.max(Math.min((width * usable) / boxW, (height * usable) / boxH), 1),
-    maxScale,
-  );
+  const byWidth = (width * usable) / boxW;
+  const byHeight = (height * usable) / boxH;
+  const fit = Math.min(Math.max(byWidth, byHeight), Math.min(byWidth, byHeight) * crop);
+  const k = Math.min(Math.max(fit, 1), maxScale);
   const cx = (x0 + x1) / 2;
   const cy = (y0 + y1) / 2;
   return { k, x: width / 2 - cx * k, y: height / 2 - cy * k };

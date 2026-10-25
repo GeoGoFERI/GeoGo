@@ -21,6 +21,17 @@ describe('region fitting', () => {
     expect(fitTransform(box, 1000, 520).k).toBe(1);
   });
 
+  it('may crop a wide box on a tall viewport, but no more than allowed', () => {
+    const box: [[number, number], [number, number]] = [
+      [0, 0],
+      [300, 100],
+    ];
+    expect(fitTransform(box, 300, 600, 0).k).toBe(1);
+    expect(fitTransform(box, 300, 600, 0, 40, 1.35).k).toBeCloseTo(1.35);
+    // A box that fits both ways is not affected.
+    expect(fitTransform(box, 600, 200, 0, 40, 1.35).k).toBe(2);
+  });
+
   it('clamps the maximum zoom', () => {
     expect(
       fitTransform(

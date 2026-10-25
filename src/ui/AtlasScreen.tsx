@@ -1,0 +1,86 @@
+import { useMemo, useState, type ReactElement } from 'react';
+import { isMastered } from '../core/leitner';
+import { LEVELS } from '../core/levels';
+import type { Progress } from '../core/progress';
+import type { GameData } from '../data/gameData';
+import { MapView } from '../map/MapView';
+import type { MapShape, ShapeState } from '../map/types';
+import { sl } from '../i18n/sl';
+import { CheckIcon } from './icons';
+import { levelItems } from './newRound';
+import './styles/atlas.css';
+
+export interface AtlasScreenProps {
+  data: GameData;
+  progress: Progress;
+  onBack: () => void;
+  // extra layers (rivers, mountains...) drawn over the countries
+  extraShapes?: readonly MapShape[];
+}
+
+// "Moj atlas": everything already mastered is green, so the world fills in over time
+export const AtlasScreen = ({
+  data,
+  progress,
+  onBack,
+  extraShapes = [],
+}: AtlasScreenProps): ReactElement => {
+  const [picked, setPicked] = useState<string | undefined>(undefined);
+
+  const shapes = useMemo(() => [...data.countryShapes, ...extraShapes], [data, extraShapes]);
+  const states = useMemo(() => {
+    const s: Record<string, ShapeState> = {};
+    for (const [id, stats] of Object.entries(progress.items))
+      if (isMastered(stats)) s[id] = 'mastered';
+    if (picked) s[picked] = 'hint';
+    return s;
+  }, [progress, picked]);
+
+  const counts = LEVELS.filter((l) => !l.stretch).flatMap((l) => {
+    const items = levelItems(data, l.id);
+    if (items.length === 0) return [];
+    const mastered = items.filter((i) => isMastered(progress.items[i.id])).length;
+    return [{ level: l.id, mastered, total: items.length }];
+  });
+
+  // In the atlas, names may be shown: there is nothing to give away.
+  const shapeLabel = (id: string): string => data.nameOf(id)?.nameSl ?? sl.mapShape;
+  const pickedName = picked ? data.nameOf(picked) : undefined;
+  // The picked shape is highlighted, which hides its green; the check mark keeps that signal.
+  const pickedMastered = picked !== undefined && isMastered(progress.items[picked]);
+
+  return (
+    <section className="atlas">
+      <div className="atlas__head">
+        <h1>{sl.atlasTitle}</h1>
+        <p>{sl.atlasIntro}</p>
+        <ul className="atlas__counts">
+          {counts.map((c) => (
+            <li key={c.level} data-testid={`atlas-count-${String(c.level)}`}>
+              {sl.atlasCount(sl.levels[c.level], c.mastered, c.total)}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="atlas__map">
+        <MapView
+          shapes={shapes}
+          states={states}
+          onSelect={setPicked}
+          labels={sl.mapLabels}
+          shapeLabel={shapeLabel}
+          region="europe"
+        />
+        {pickedName && (
+          <div className="atlas__picked" role="status">
+            {pickedMastered && <CheckIcon size={24} />}
+            {pickedName.nameSl}
+          </div>
+        )}
+        <button type="button" className="btn btn--plain atlas__back" onClick={onBack}>
+          {sl.back}
+        </button>
+      </div>
+    </section>
+  );
+};

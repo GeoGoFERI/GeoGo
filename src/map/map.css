@@ -128,3 +128,11 @@
 .hit-dot.shape--hint {
   stroke-width: 3px;
 }
+
+.shape--mastered {
+  stroke-width: 1.5px;
+}
+
+.hit-dot.shape--mastered {
+  fill: var(--map-correct);
+}

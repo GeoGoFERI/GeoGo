@@ -12,6 +12,7 @@ import { useGameData } from './useGameData';
 import { StartScreen, type LevelCardInfo } from './StartScreen';
 import { PlayScreen } from './PlayScreen';
 import { SummaryScreen } from './SummaryScreen';
+import { AtlasScreen } from './AtlasScreen';
 import { FactCard } from './FactCard';
 import { factContent } from './factContent';
 import { Confetti } from './Confetti';
@@ -95,6 +96,9 @@ export function App(): ReactElement {
             onAtlas={() => dispatch({ type: 'openAtlas' })}
             {...(status ? { status } : {})}
           />
+        )}
+        {view.screen === 'atlas' && data && (
+          <AtlasScreen data={data} progress={progress} onBack={() => dispatch({ type: 'home' })} />
         )}
         {view.screen === 'summary' && data && (
           <SummaryScreen
