@@ -6,11 +6,12 @@ import { loadProgress, saveProgress } from '../core/progress';
 import { browserStore } from '../core/storage';
 import { sl } from '../i18n/sl';
 import { gameReducer, type GameState } from './game';
-import { levelItems, makeRng, newRound } from './newRound';
+import { levelItems, makeRng, newRound, replayRound } from './newRound';
 import { readTestHooks } from './testHooks';
 import { useGameData } from './useGameData';
 import { StartScreen, type LevelCardInfo } from './StartScreen';
 import { PlayScreen } from './PlayScreen';
+import { SummaryScreen } from './SummaryScreen';
 import { FactCard } from './FactCard';
 import { factContent } from './factContent';
 import { Confetti } from './Confetti';
@@ -93,6 +94,21 @@ export function App(): ReactElement {
             onStart={() => startLevel(selected)}
             onAtlas={() => dispatch({ type: 'openAtlas' })}
             {...(status ? { status } : {})}
+          />
+        )}
+        {view.screen === 'summary' && data && (
+          <SummaryScreen
+            level={view.round.level}
+            summary={view.summary}
+            onAgain={() => startLevel(view.round.level)}
+            onReplayWeak={() =>
+              dispatch({
+                type: 'startRound',
+                level: view.round.level,
+                questions: replayRound(view.summary.weakItemIds, data, rng),
+              })
+            }
+            onHome={() => dispatch({ type: 'home' })}
           />
         )}
         {(view.screen === 'play' || view.screen === 'fact') && data && (

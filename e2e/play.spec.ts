@@ -99,3 +99,29 @@ test('the map can be played by keyboard', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect(page.locator('.toast, .fact').first()).toBeVisible();
 });
+
+test('the summary describes the round and replays weak items', async ({ page }) => {
+  await startRound(page, ['country-si', 'country-de']);
+  // Slovenia: one wrong try (2 stars). Germany: first try (3 stars).
+  const hu = await centreOf(page, 'country-hu');
+  await page.mouse.click(hu.x, hu.y);
+  const si = await centreOf(page, 'country-si');
+  await page.mouse.click(si.x, si.y);
+  await page.getByRole('button', { name: 'Naprej' }).click();
+  await page.waitForTimeout(600);
+  const de = await centreOf(page, 'country-de');
+  await page.mouse.click(de.x, de.y);
+  await page.getByRole('button', { name: 'Naprej' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Konec kroga' })).toBeVisible();
+  await expect(page.getByText('5 od 6 zvezdic')).toBeVisible();
+  await expect(page.getByTestId('summary-headline')).toHaveText('Evropo že dobro poznaš.');
+  if (process.env.SHOT_DIR) {
+    await page.screenshot({
+      path: `${process.env.SHOT_DIR}/summary-${test.info().project.name}.png`,
+    });
+  }
+  await page.getByRole('button', { name: 'Ponovi težje' }).click();
+  await expect(page.getByTestId('prompt-name')).toHaveText('Slovenija');
+  await expect(page.getByRole('list', { name: 'Vprašanje 1 od 1' })).toBeVisible();
+});

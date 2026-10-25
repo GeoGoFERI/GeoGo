@@ -1,0 +1,46 @@
+.summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px 32px;
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.summary h1:focus {
+  outline: none;
+}
+
+.summary__stars {
+  display: flex;
+  gap: 6px;
+}
+
+.summary__count,
+.summary__practice {
+  margin: 0;
+}
+
+.summary__headline {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.summary__practice {
+  padding: 8px 16px;
+  border: var(--border);
+  border-radius: var(--radius-card);
+  background: var(--geogo-yellow);
+  font-weight: 600;
+}
+
+.summary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
