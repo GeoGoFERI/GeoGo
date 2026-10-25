@@ -12,6 +12,7 @@ import { useGameData } from './useGameData';
 import { StartScreen, type LevelCardInfo } from './StartScreen';
 import { PlayScreen } from './PlayScreen';
 import { FactCard } from './FactCard';
+import { factContent } from './factContent';
 import { Confetti } from './Confetti';
 import logoUrl from './assets/logo.webp';
 import './styles/fonts';
@@ -58,6 +59,10 @@ export function App(): ReactElement {
     dispatch({ type: 'startRound', level, questions: newRound(level, data, progress, hooks, rng) });
   };
 
+  // The item the fact card is about: the prompt item (the country for hemisphere questions).
+  const factTarget =
+    view.screen === 'fact' ? data?.itemById.get(view.question.question.promptId) : undefined;
+
   const status =
     dataState.status === 'loading'
       ? sl.loading
@@ -103,11 +108,14 @@ export function App(): ReactElement {
                   factCard: (
                     <>
                       <Confetti />
-                      <FactCard
-                        name={data.nameOf(view.question.question.promptId)?.nameSl ?? ''}
-                        praise={sl.correct[view.round.index % sl.correct.length] ?? sl.correct[0]}
-                        onNext={() => dispatch({ type: 'next', items: data.itemById })}
-                      />
+                      {factTarget && (
+                        <FactCard
+                          content={factContent(factTarget, data)}
+                          kind={factTarget.kind}
+                          praise={sl.correct[view.round.index % sl.correct.length] ?? sl.correct[0]}
+                          onNext={() => dispatch({ type: 'next', items: data.itemById })}
+                        />
+                      )}
                     </>
                   ),
                 }

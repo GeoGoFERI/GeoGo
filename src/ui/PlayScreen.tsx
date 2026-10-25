@@ -36,6 +36,7 @@ export function PlayScreen({
   factCard,
 }: PlayScreenProps): ReactElement {
   const mapRef = useRef<MapHandle>(null);
+  const factRef = useRef<HTMLDivElement>(null);
   const level: LevelId = round.level;
   const { question: q, feedback, hintTier } = question;
   const target = data.itemById.get(q.promptId);
@@ -49,9 +50,12 @@ export function PlayScreen({
     else mapRef.current?.fitToShape(targetId, 16);
   }, [feedback, targetId]);
 
-  // After a correct answer, centre the target so the fact card does not hide it.
+  // After a correct answer, centre the target in the part of the map the fact card leaves free.
   useEffect(() => {
-    if (question.done) mapRef.current?.fitToShape(targetId, 20);
+    if (!question.done) return;
+    const card = factRef.current?.querySelector('.fact');
+    const inset = card instanceof HTMLElement ? card.offsetHeight + 24 : 0;
+    mapRef.current?.fitToShape(targetId, 20, inset);
   }, [question.done, targetId]);
 
   // Each new question starts from the level's home view.
@@ -119,7 +123,9 @@ export function PlayScreen({
             {sl.help}
           </button>
         )}
-        {factCard}
+        <div ref={factRef} className="play__fact">
+          {factCard}
+        </div>
       </div>
     </section>
   );

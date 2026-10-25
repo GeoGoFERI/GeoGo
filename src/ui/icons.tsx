@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { LevelId } from '../core/item';
+import type { ItemKind, LevelId } from '../core/item';
 
 // Small inline icons in the logo style: flat fills and navy outlines. All decorative.
 
@@ -121,6 +121,56 @@ export const LevelIcon = ({
   return (
     <svg viewBox="0 0 48 48" width={size} height={size} aria-hidden="true">
       {body[level]}
+    </svg>
+  );
+};
+
+export const KindIcon = ({ kind, size = 40 }: { kind: ItemKind; size?: number }): ReactElement => {
+  const s = { ...stroke, strokeWidth: 2.2 };
+  let body: ReactElement;
+  switch (kind) {
+    case 'mountain':
+      body = <path d="M3 40l13-22 8 12 6-9 15 19z" fill="var(--geogo-green)" {...s} />;
+      break;
+    case 'river':
+      body = (
+        <path
+          d="M8 6c10 6-6 14 4 20s6 12 16 16"
+          fill="none"
+          {...s}
+          stroke="var(--geogo-ocean)"
+          strokeWidth={5}
+          strokeLinecap="round"
+        />
+      );
+      break;
+    case 'ocean':
+    case 'sea':
+      body = (
+        <path
+          d="M4 20c5-5 9 5 14 0s9 5 14 0 9 5 12 0M4 32c5-5 9 5 14 0s9 5 14 0 9 5 12 0"
+          fill="none"
+          {...s}
+          stroke="var(--geogo-ocean)"
+          strokeWidth={4}
+          strokeLinecap="round"
+        />
+      );
+      break;
+    case 'line':
+    case 'hemisphere':
+    case 'pole':
+      return <LevelIcon level={2} size={size} />;
+    case 'continent':
+      return <LevelIcon level={1} size={size} />;
+    default:
+      body = (
+        <path d="M10 30c-4-8 4-18 14-18s18 6 14 16-24 12-28 2z" fill="var(--geogo-yellow)" {...s} />
+      );
+  }
+  return (
+    <svg viewBox="0 0 48 48" width={size} height={size} aria-hidden="true">
+      {body}
     </svg>
   );
 };

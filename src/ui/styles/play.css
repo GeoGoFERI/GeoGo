@@ -228,3 +228,32 @@
     display: none;
   }
 }
+
+.fact__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flag--big {
+  width: 44px;
+  height: 44px;
+}
+
+.fact__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fact__text {
+  margin: 0;
+}
+
+/* Wrapper only, so the card's height can be measured; the card positions itself. */
+.play__fact {
+  display: contents;
+}

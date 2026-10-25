@@ -27,6 +27,10 @@ test('a wrong click names the country, a right one opens the fact card', async (
   const si = await centreOf(page, 'country-si');
   await page.mouse.click(si.x, si.y);
   await expect(page.getByRole('dialog')).toContainText('Slovenija');
+  await expect(page.getByRole('dialog')).toContainText('Obmorska država');
+  await expect(page.getByRole('dialog')).toContainText(
+    'Sosednje države: Avstrija, Hrvaška, Italija, Madžarska',
+  );
   if (process.env.SHOT_DIR) {
     await page.waitForTimeout(400);
     await page.screenshot({ path: `${process.env.SHOT_DIR}/fact-${test.info().project.name}.png` });

@@ -50,7 +50,7 @@ export interface MapViewProps {
 export interface MapHandle {
   fitToRegion: (region: RegionId) => void;
   // Zooms to a shape with its surroundings: at least `contextDeg` degrees around its centre.
-  fitToShape: (id: string, contextDeg?: number) => void;
+  fitToShape: (id: string, contextDeg?: number, bottomInset?: number) => void;
   reset: () => void;
 }
 
@@ -118,16 +118,20 @@ export function MapView({
   }, [geometry, controls]);
 
   const handle = useMemo<MapHandle>(() => {
-    const fitBox = (box: PixelBox, maxScale?: number): void =>
-      controls.transformTo(fitTransform(box, width, height, 0.04, maxScale));
+    const fitBox = (box: PixelBox, bottomInset = 0): void => {
+      // Fit into the uncovered part of the frame; the top edge stays where it is.
+      const visible = Math.max(height - bottomInset, height * 0.3);
+      controls.transformTo(fitTransform(box, width, visible));
+    };
     const fitToRegion = (r: RegionId): void =>
       fitBox(projectBox(geometry.projection, REGION_BOXES[r]));
     return {
       fitToRegion,
-      fitToShape: (id, contextDeg = 14) => {
+      fitToShape: (id, contextDeg = 14, bottomInset = 0) => {
         const shape = shapes.find((s) => s.id === id);
         if (!shape) return;
-        fitBox(projectBox(geometry.projection, contextBox(mainPart(shape.feature), contextDeg)));
+        const box = contextBox(mainPart(shape.feature), contextDeg);
+        fitBox(projectBox(geometry.projection, box), bottomInset);
       },
       reset: () => fitToRegion(region),
     };
