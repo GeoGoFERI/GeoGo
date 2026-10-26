@@ -15,6 +15,7 @@ export const sl = {
   atlas: 'Moj atlas',
   back: 'Nazaj',
   home: 'Domov',
+  logoHome: 'GeoGo: na začetek',
   loading: 'Nalagam zemljevid …',
   loadFailed: 'Zemljevida ni bilo mogoče naložiti. Poskusi znova.',
   chooseLevel: 'Izberi stopnjo',

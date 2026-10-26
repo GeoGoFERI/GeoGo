@@ -12,7 +12,8 @@
     "e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build",
     "format": "prettier --write .",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "screenshots": "SCREENSHOTS=1 playwright test e2e/flow.spec.ts && node scripts/shrink-screenshots.mjs"
   },
   "license": "UNLICENSED",
   "dependencies": {

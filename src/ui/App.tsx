@@ -17,10 +17,6 @@ import { FactCard } from './FactCard';
 import { factContent } from './factContent';
 import { Confetti } from './Confetti';
 import logoUrl from './assets/logo.webp';
-import './styles/fonts';
-import './styles/tokens.css';
-import './styles/global.css';
-import './styles/app.css';
 
 const store = browserStore();
 const hooks = readTestHooks(window.location.search);
@@ -80,7 +76,7 @@ export function App(): ReactElement {
             type="button"
             className="app__logo-btn"
             onClick={() => dispatch({ type: 'home' })}
-            aria-label={sl.home}
+            aria-label={sl.logoHome}
           >
             <img src={logoUrl} alt="" className="app__logo" />
           </button>
