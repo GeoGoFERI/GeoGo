@@ -1,5 +1,11 @@
 import type { MouseEvent, ReactElement } from 'react';
-import { DOT_RADIUS_PX, HIT_RADIUS_PX, INNER_RADIUS_PX, type HitTarget } from './hitAreas';
+import {
+  DOT_RADIUS_PX,
+  HIT_RADIUS_PX,
+  INNER_RADIUS_PX,
+  hitSizes,
+  type HitTarget,
+} from './hitAreas';
 import type { ShapeState } from './types';
 
 export interface HitLayerProps {
@@ -64,4 +70,17 @@ export function HitLayer({ targets, states, onSelect }: HitLayerProps): ReactEle
       })}
     </g>
   );
+}
+
+// Rescales the tiny-place dots and tap circles so they stay the same size on screen.
+export function applyHitSizes(svg: SVGSVGElement | null, k: number): void {
+  if (!svg) return;
+  for (const group of svg.querySelectorAll<SVGGElement>('[data-hit-size]')) {
+    const sizes = hitSizes(Number(group.dataset.hitSize), k);
+    const [dot, hit] = group.children;
+    dot?.setAttribute('r', String(sizes.dotRadius));
+    dot?.setAttribute('display', sizes.showDot ? 'inline' : 'none');
+    hit?.setAttribute('r', String(sizes.hitRadius));
+    hit?.setAttribute('display', sizes.showHit ? 'inline' : 'none');
+  }
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import world from 'world-atlas/countries-50m.json';
 import { itemSchema } from '../core/item';
 import { countryKeys, type WorldTopology } from '../map/world';
+import { testSources } from './testSources';
 import { buildGameData } from './gameData';
 import { CONTEXT_GEOS, GEO_MERGES } from './countriesWorld';
 import { EUROPE_ROWS } from './countriesEurope';
@@ -9,7 +10,7 @@ import { PLACES, placeId } from './places';
 import { flagUrl } from './flags';
 
 const topology = world as unknown as WorldTopology;
-const data = buildGameData(topology);
+const data = buildGameData(testSources);
 
 describe('game data', () => {
   it('has valid items with unique ids', () => {

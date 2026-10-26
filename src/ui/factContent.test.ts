@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import world from 'world-atlas/countries-50m.json';
-import type { WorldTopology } from '../map/world';
+import { testSources } from '../data/testSources';
 import { buildGameData } from '../data/gameData';
 import { factContent } from './factContent';
 
-const data = buildGameData(world as unknown as WorldTopology);
+const data = buildGameData(testSources);
 const item = (id: string) => {
   const found = data.itemById.get(id);
   if (!found) throw new Error(id);

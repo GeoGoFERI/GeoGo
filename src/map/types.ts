@@ -10,6 +10,9 @@ export interface MapShape {
   feature: Feature<Geometry>;
   // Non-interactive shapes are drawn as context only (no hover, focus or click).
   interactive: boolean;
+  // Drawing style: 'water' for oceans and seas, 'borderless' for areas whose outline is drawn by
+  // a separate line layer (continents), 'wide' for rivers and ranges with a wide tap zone.
+  variant?: 'water' | 'borderless' | 'wide';
 }
 
 // Visual state of a shape; drives a CSS modifier class.

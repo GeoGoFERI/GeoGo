@@ -136,3 +136,27 @@
 .hit-dot.shape--mastered {
   fill: var(--map-correct);
 }
+
+/* Oceans and seas: sea tint, no outline; the coast is drawn by the land on top. */
+.shape--water {
+  fill: var(--map-ocean);
+  stroke: none;
+}
+
+.shape--borderless {
+  stroke: none;
+}
+
+/* Lines (outlines, rivers, the equator) are never filled. Non-interactive lines let taps through. */
+.shape--line {
+  fill: none;
+  stroke: var(--geogo-navy);
+  stroke-width: 1.2px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.shape--line:not(.shape--interactive) {
+  pointer-events: none;
+}

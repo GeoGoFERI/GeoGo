@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { geoPath } from 'd3-geo';
-import world from 'world-atlas/countries-50m.json';
-import type { WorldTopology } from '../map/world';
 import { createProjection } from '../map/projection';
 import { hitTargets } from '../map/hitAreas';
+import { testSources } from './testSources';
 import { buildGameData } from './gameData';
 
-const data = buildGameData(world as unknown as WorldTopology);
+const data = buildGameData(testSources);
 
 describe('microstates and tiny countries', () => {
   const tiny = ['country-va', 'country-sm', 'country-mc', 'country-li', 'country-ad', 'country-mt'];

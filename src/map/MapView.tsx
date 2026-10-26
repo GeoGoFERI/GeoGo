@@ -15,8 +15,9 @@ import { createProjection } from './projection';
 import { useSize } from './useSize';
 import { anchorOf } from './anchors';
 import { nearestAnchor, nextInDirection, type Direction } from './focusNav';
-import { hitSizes, hitTargets } from './hitAreas';
-import { HitLayer } from './HitLayer';
+import { hitTargets } from './hitAreas';
+import { HitLayer, applyHitSizes } from './HitLayer';
+import { ShapeLayer } from './ShapeLayer';
 import { useZoom } from './useZoom';
 import { ZoomButtons } from './ZoomButtons';
 import { mainPart } from './anchors';
@@ -62,19 +63,6 @@ const ARROWS: Record<string, Direction> = {
 };
 
 const NO_STATES: Readonly<Record<string, ShapeState>> = {};
-
-// Rescales the tiny-place dots and tap circles so they stay the same size on screen.
-function applyHitSizes(svg: SVGSVGElement | null, k: number): void {
-  if (!svg) return;
-  for (const group of svg.querySelectorAll<SVGGElement>('[data-hit-size]')) {
-    const sizes = hitSizes(Number(group.dataset.hitSize), k);
-    const [dot, hit] = group.children;
-    dot?.setAttribute('r', String(sizes.dotRadius));
-    dot?.setAttribute('display', sizes.showDot ? 'inline' : 'none');
-    hit?.setAttribute('r', String(sizes.hitRadius));
-    hit?.setAttribute('display', sizes.showHit ? 'inline' : 'none');
-  }
-}
 
 // The interactive SVG map.
 export function MapView({
@@ -226,25 +214,14 @@ export function MapView({
       >
         <g ref={layerRef} className="map__layer">
           <path className="map__sphere" d={geometry.sphere} />
-          {geometry.drawn.map(({ shape, d }) => {
-            const state = states[shape.id];
-            const className = `shape shape--${shape.kind}${shape.interactive ? ' shape--interactive' : ''}${state ? ` shape--${state}` : ''}`;
-            return shape.interactive ? (
-              <path
-                key={shape.id}
-                d={d}
-                data-id={shape.id}
-                className={className}
-                role="button"
-                aria-label={shapeLabel(shape.id)}
-                tabIndex={shape.id === activeId ? 0 : -1}
-                onClick={() => select(shape.id)}
-                onFocus={() => setActiveId(shape.id)}
-              />
-            ) : (
-              <path key={shape.id} d={d} className={className} aria-hidden="true" />
-            );
-          })}
+          <ShapeLayer
+            drawn={geometry.drawn}
+            states={states}
+            activeId={activeId}
+            shapeLabel={shapeLabel}
+            onSelect={select}
+            onFocusShape={setActiveId}
+          />
           <HitLayer targets={geometry.targets} states={states} onSelect={select} />
         </g>
       </svg>
