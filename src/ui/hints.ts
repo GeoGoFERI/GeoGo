@@ -1,14 +1,29 @@
-import type { Item } from '../core/item';
+import type { Question } from '../core/round';
 import type { GameData } from '../data/gameData';
 import { sl } from '../i18n/sl';
 
-export type NeighbourHint = { text: string; highlightId?: string };
+export type Tier2Hint = { text: string; highlightId?: string };
 
-export function neighbourHint(item: Item, data: GameData): NeighbourHint {
-  const neighbourId = data.countryFact(item.id)?.neighbours[0];
-  const neighbourName = neighbourId ? data.nameOf(neighbourId)?.nameSl : undefined;
-  if (neighbourId && neighbourName)
-    return { text: sl.hintNeighbour(neighbourName), highlightId: neighbourId };
-  const group = item.group ? sl.groups[item.group] : undefined;
-  return { text: group ? sl.hintGroup(group) : sl.hintZoom };
+const PAIR_HINTS: Record<string, string> = {
+  'line-ekvator': sl.hintLines,
+  'hemisphere-severna': sl.hintNorthSouth,
+  'hemisphere-vzhodna': sl.hintEastWest,
+  'pole-severni': sl.hintPoles,
+};
+
+export function tier2Hint(question: Question, data: GameData): Tier2Hint {
+  const pairHint = question.choiceIds?.[0] ? PAIR_HINTS[question.choiceIds[0]] : undefined;
+  if (pairHint) return { text: pairHint };
+
+  const item = data.itemById.get(question.promptId);
+  if (!item) return { text: sl.hintZoom };
+  if (item.kind === 'country') {
+    const neighbourId = data.countryFact(item.id)?.neighbours[0];
+    const neighbourName = neighbourId ? data.nameOf(neighbourId)?.nameSl : undefined;
+    if (neighbourId && neighbourName)
+      return { text: sl.hintNeighbour(neighbourName), highlightId: neighbourId };
+    const group = item.group ? sl.groups[item.group] : undefined;
+    return { text: group ? sl.hintGroup(group) : sl.hintZoom };
+  }
+  return { text: sl.itemHints[item.id] ?? sl.hintZoom };
 }

@@ -257,3 +257,8 @@
 .play__fact {
   display: contents;
 }
+
+.banner__detail {
+  flex-basis: 100%;
+  font-weight: 600;
+}

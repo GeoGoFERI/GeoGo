@@ -160,3 +160,110 @@
 .shape--line:not(.shape--interactive) {
   pointer-events: none;
 }
+
+/* Invisible wide tap zone under thin lines (rivers, ranges, the equator). */
+.shape-wide-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 28px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.shape--line.shape--wide {
+  stroke-width: 4px;
+}
+
+.shape--tone-orange {
+  stroke: var(--geogo-orange-deep);
+}
+
+.shape--tone-river {
+  stroke: var(--geogo-ocean);
+}
+
+.shape--tone-mountain {
+  stroke: #8a6a3c;
+  stroke-dasharray: 1 6;
+  stroke-width: 7px;
+}
+
+.shape--tone-grid {
+  stroke: var(--geogo-ocean);
+  stroke-opacity: 0.35;
+  stroke-width: 0.8px;
+}
+
+/* Lines change colour for state, since they have no fill. */
+.shape--line.shape--correct {
+  stroke: var(--map-correct);
+  stroke-width: 6px;
+}
+
+.shape--line.shape--wrong {
+  stroke: var(--map-wrong);
+  stroke-width: 6px;
+}
+
+.shape--line.shape--flash {
+  stroke: var(--map-hover);
+  stroke-width: 7px;
+  animation: none;
+}
+
+@media (hover: hover) {
+  .shape--line.shape--interactive:hover,
+  g:hover > .shape--line.shape--interactive {
+    stroke: var(--map-hover);
+    fill: none;
+  }
+}
+
+.shape--line.shape--interactive:focus-visible {
+  fill: none;
+  stroke: var(--map-hover);
+  stroke-width: 7px;
+}
+
+/* See-through areas (hemispheres) over the countries. */
+.shape--overlay {
+  fill: var(--geogo-paper);
+  fill-opacity: 0;
+  stroke: none;
+}
+
+@media (hover: hover) {
+  .shape--overlay.shape--interactive:hover {
+    fill: var(--map-hover);
+    fill-opacity: 0.35;
+  }
+}
+
+.shape--overlay.shape--interactive:focus-visible,
+.shape--overlay.shape--flash {
+  fill: var(--map-hover);
+  fill-opacity: 0.45;
+}
+
+.shape--overlay.shape--correct {
+  fill: var(--map-correct);
+  fill-opacity: 0.5;
+}
+
+.shape--overlay.shape--wrong {
+  fill: var(--map-wrong);
+  fill-opacity: 0.45;
+}
+
+/* Point items (poles) are bigger and take focus like a shape. */
+.hit-dot--point {
+  fill: var(--geogo-orange);
+  outline: none;
+}
+
+.hit-dot--point:focus-visible {
+  fill: var(--map-hover);
+  stroke-width: 4px;
+}

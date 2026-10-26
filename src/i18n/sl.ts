@@ -49,6 +49,34 @@ export const sl = {
   hintGroup: (group: string): string => `Leži v tem delu Evrope: ${group}`,
   hintFlash: 'Tukaj je! Klikni utripajoče območje.',
   flagOf: (name: string): string => `Zastava: ${name}`,
+  hemisphereAsk: (plural: boolean): string => `V kateri polobli ${plural ? 'ležijo' : 'leži'}`,
+  hemisphereDetail: {
+    ns: 'Severna ali južna?',
+    ew: 'Vzhodna ali zahodna?',
+  },
+  country: 'Država',
+  hintLines: 'Namig: ekvator poteka vodoravno, poldnevnik pa navpično.',
+  hintNorthSouth: 'Namig: ekvator loči severno in južno poloblo.',
+  hintEastWest: 'Namig: začetni poldnevnik loči vzhodno in zahodno poloblo.',
+  hintPoles: 'Namig: severni pol je na vrhu zemljevida, južni pol pa na dnu.',
+  // tier 2 hints for items that are not countries: where they lie
+  itemHints: {
+    'continent-evropa': 'Namig: Evropa leži severno od Afrike.',
+    'continent-azija': 'Namig: Azija leži vzhodno od Evrope.',
+    'continent-afrika': 'Namig: Afrika leži južno od Evrope.',
+    'continent-severna-amerika':
+      'Namig: Severna Amerika leži zahodno od Evrope, onkraj Atlantskega oceana.',
+    'continent-juzna-amerika': 'Namig: Južna Amerika leži južno od Severne Amerike.',
+    'continent-avstralija': 'Namig: Avstralija leži jugovzhodno od Azije.',
+    'continent-antarktika': 'Namig: Antarktika je čisto na jugu, okoli južnega pola.',
+    'ocean-atlantski':
+      'Namig: Atlantski ocean leži med Evropo in Afriko na eni strani ter Amerikama na drugi.',
+    'ocean-tihi':
+      'Namig: Tihi ocean leži med Azijo in Avstralijo na eni strani ter Amerikama na drugi.',
+    'ocean-indijski': 'Namig: Indijski ocean leži južno od Azije, med Afriko in Avstralijo.',
+    'ocean-arkticni': 'Namig: Arktični ocean je čisto na severu, okoli severnega pola.',
+    'ocean-juzni': 'Namig: Južni ocean obdaja Antarktiko.',
+  } as Record<string, string>,
 
   coastal: 'Obmorska država',
   landlocked: 'Celinska država',

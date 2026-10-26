@@ -17,6 +17,8 @@ export interface HitTarget {
   center: [number, number];
   // Largest side of the shape's pixel bounding box at zoom 1 (0 for points).
   sizePx: number;
+  // A point item (no outline of its own).
+  point: boolean;
 }
 
 // Degrees across a feature's lon/lat bounding box.
@@ -33,13 +35,14 @@ export function hitTargets(shapes: readonly MapShape[], path: GeoPath): HitTarge
   for (const shape of shapes) {
     if (!shape.interactive) continue;
     if (shape.kind === 'point') {
-      targets.push({ id: shape.id, center: anchorOf(path, shape.feature), sizePx: 0 });
+      targets.push({ id: shape.id, center: anchorOf(path, shape.feature), sizePx: 0, point: true });
     } else if (shape.kind === 'area' && spanDegrees(shape.feature) < TINY_DEGREES) {
       const [[x0, y0], [x1, y1]] = path.bounds(shape.feature);
       targets.push({
         id: shape.id,
         center: anchorOf(path, shape.feature),
         sizePx: Math.max(x1 - x0, y1 - y0),
+        point: false,
       });
     }
   }

@@ -3,13 +3,13 @@ import type { LevelId } from '../core/item';
 import { levelById } from '../core/levels';
 import type { QuestionState } from '../core/question';
 import type { GameData } from '../data/gameData';
-import { flagUrl } from '../data/flags';
 import { MapView, type MapHandle } from '../map/MapView';
 import type { ShapeState } from '../map/types';
 import { sl } from '../i18n/sl';
 import { FeedbackToast } from './FeedbackToast';
 import { PromptBanner } from './PromptBanner';
-import { neighbourHint } from './hints';
+import { tier2Hint } from './hints';
+import { promptFor } from './prompt';
 import { BulbIcon } from './icons';
 import type { Round } from './game';
 import './styles/play.css';
@@ -39,9 +39,10 @@ export function PlayScreen({
   const factRef = useRef<HTMLDivElement>(null);
   const level: LevelId = round.level;
   const { question: q, feedback, hintTier } = question;
-  const target = data.itemById.get(q.promptId);
   const targetId = q.acceptIds[0] ?? q.itemId;
-  const hint = useMemo(() => (target ? neighbourHint(target, data) : undefined), [target, data]);
+  const hint = useMemo(() => tier2Hint(q, data), [q, data]);
+  const prompt = useMemo(() => promptFor(q, data), [q, data]);
+  const shapes = data.shapesFor(level, q);
 
   // Help tiers move the view: 1 zooms to the target's surroundings, 3 closer in to the flash.
   useEffect(() => {
@@ -65,12 +66,14 @@ export function PlayScreen({
 
   const states = useMemo(() => {
     const s: Record<string, ShapeState> = {};
-    if (hintTier >= 2 && hint?.highlightId) s[hint.highlightId] = 'hint';
+    // A "which hemisphere" question shows its country coloured in.
+    if (q.mode === 'hemisphere') s[q.promptId] = 'hint';
+    if (hintTier >= 2 && hint.highlightId) s[hint.highlightId] = 'hint';
     if (feedback.type === 'wrong') s[feedback.clickedId] = 'wrong';
     if (hintTier >= 3) s[targetId] = 'flash';
     if (question.done) s[targetId] = 'correct';
     return s;
-  }, [feedback, hintTier, hint, targetId, question.done]);
+  }, [feedback, hintTier, hint, targetId, question.done, q]);
 
   let toast: ReactElement | undefined;
   if (feedback.type === 'wrong') {
@@ -84,24 +87,14 @@ export function PlayScreen({
         />
       );
   } else if (feedback.type === 'hint') {
-    const text =
-      feedback.tier === 1
-        ? sl.hintZoom
-        : feedback.tier === 2
-          ? (hint?.text ?? sl.hintZoom)
-          : sl.hintFlash;
+    const text = feedback.tier === 1 ? sl.hintZoom : feedback.tier === 2 ? hint.text : sl.hintFlash;
     toast = <FeedbackToast key={question.seq} kind="hint" text={text} />;
   }
-
-  const name = target?.nameSl ?? '';
-  const flag = target?.kind === 'country' ? flagUrl(target.flag) : undefined;
 
   return (
     <section className="play">
       <PromptBanner
-        label={sl.find}
-        name={name}
-        {...(flag ? { flagUrl: flag } : {})}
+        {...prompt}
         index={round.index}
         total={round.questions.length}
         onHome={onHome}
@@ -109,7 +102,7 @@ export function PlayScreen({
       <div className="play__map">
         <MapView
           ref={mapRef}
-          shapes={data.shapesForLevel(level)}
+          shapes={shapes}
           states={states}
           onSelect={onSelect}
           labels={sl.mapLabels}

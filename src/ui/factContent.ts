@@ -1,4 +1,5 @@
 import type { Item } from '../core/item';
+import type { Question } from '../core/round';
 import type { GameData } from '../data/gameData';
 import { flagUrl } from '../data/flags';
 import { sl } from '../i18n/sl';
@@ -10,8 +11,12 @@ export type FactContent = {
   text?: string;
 };
 
-export const factContent = (item: Item, data: GameData): FactContent => {
+export const factContent = (item: Item, data: GameData, question?: Question): FactContent => {
   const content: FactContent = { title: item.nameSl, lines: [] };
+  if (question?.mode === 'hemisphere') {
+    const country = data.nameOf(question.promptId)?.nameSl;
+    if (country) content.lines.push({ label: sl.country, value: country });
+  }
   if (item.kind === 'country') {
     const flag = flagUrl(item.flag);
     if (flag) content.flagUrl = flag;

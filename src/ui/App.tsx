@@ -57,9 +57,11 @@ export function App(): ReactElement {
     dispatch({ type: 'startRound', level, questions: newRound(level, data, progress, hooks, rng) });
   };
 
-  // The item the fact card is about: the prompt item (the country for hemisphere questions).
-  const factTarget =
-    view.screen === 'fact' ? data?.itemById.get(view.question.question.promptId) : undefined;
+  // The item the fact card is about: the prompt item, or the hemisphere for a hemisphere question.
+  const answered = view.screen === 'fact' ? view.question.question : undefined;
+  const factTarget = answered
+    ? data?.itemById.get(answered.mode === 'hemisphere' ? answered.itemId : answered.promptId)
+    : undefined;
 
   const status =
     dataState.status === 'loading'
@@ -126,7 +128,7 @@ export function App(): ReactElement {
                       <Confetti />
                       {factTarget && (
                         <FactCard
-                          content={factContent(factTarget, data)}
+                          content={factContent(factTarget, data, answered)}
                           kind={factTarget.kind}
                           praise={sl.correct[view.round.index % sl.correct.length] ?? sl.correct[0]}
                           onNext={() => dispatch({ type: 'next', items: data.itemById })}

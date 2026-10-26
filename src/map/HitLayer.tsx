@@ -12,10 +12,21 @@ export interface HitLayerProps {
   targets: readonly HitTarget[];
   states: Readonly<Record<string, ShapeState>>;
   onSelect: (id: string) => void;
+  // Point items (the poles) have no path, so their dot takes keyboard focus instead.
+  activeId: string | undefined;
+  shapeLabel: (id: string) => string;
+  onFocusShape: (id: string) => void;
 }
 
 // Dots and invisible tap circles for tiny places.
-export function HitLayer({ targets, states, onSelect }: HitLayerProps): ReactElement {
+export function HitLayer({
+  targets,
+  states,
+  onSelect,
+  activeId,
+  shapeLabel,
+  onFocusShape,
+}: HitLayerProps): ReactElement {
   // Tap circles can overlap each other and neighbouring countries. Resolution order:
   // 1. the nearest tiny place whose centre is within INNER_RADIUS_PX wins outright;
   // 2. otherwise a real country outline under the tap wins (circles must not steal clear taps);
@@ -49,13 +60,27 @@ export function HitLayer({ targets, states, onSelect }: HitLayerProps): ReactEle
         const state = states[t.id];
         return (
           <g key={t.id} data-hit-size={t.sizePx}>
-            <circle
-              className={`hit-dot${state ? ` shape--${state}` : ''}`}
-              cx={t.center[0]}
-              cy={t.center[1]}
-              r={DOT_RADIUS_PX}
-              aria-hidden="true"
-            />
+            {t.point ? (
+              <circle
+                className={`hit-dot hit-dot--point${state ? ` shape--${state}` : ''}`}
+                data-id={t.id}
+                cx={t.center[0]}
+                cy={t.center[1]}
+                r={DOT_RADIUS_PX}
+                role="button"
+                aria-label={shapeLabel(t.id)}
+                tabIndex={t.id === activeId ? 0 : -1}
+                onFocus={() => onFocusShape(t.id)}
+              />
+            ) : (
+              <circle
+                className={`hit-dot${state ? ` shape--${state}` : ''}`}
+                cx={t.center[0]}
+                cy={t.center[1]}
+                r={DOT_RADIUS_PX}
+                aria-hidden="true"
+              />
+            )}
             <circle
               className="hit-area"
               data-hit-id={t.id}

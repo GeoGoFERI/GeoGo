@@ -8,7 +8,9 @@ test('Level 1: find a continent and an ocean', async ({ page }) => {
   await settle(page);
   await expect(page.getByTestId('prompt-name')).toHaveText('Azija');
   if (process.env.SHOT_DIR) {
-    await page.screenshot({ path: `${process.env.SHOT_DIR}/level1-${test.info().project.name}.png` });
+    await page.screenshot({
+      path: `${process.env.SHOT_DIR}/level1-${test.info().project.name}.png`,
+    });
   }
   await tapShape(page, 'continent-afrika');
   await expect(page.getByRole('status')).toContainText('To je Afrika. Poskusi znova!');

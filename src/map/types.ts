@@ -11,8 +11,11 @@ export interface MapShape {
   // Non-interactive shapes are drawn as context only (no hover, focus or click).
   interactive: boolean;
   // Drawing style: 'water' for oceans and seas, 'borderless' for areas whose outline is drawn by
-  // a separate line layer (continents), 'wide' for rivers and ranges with a wide tap zone.
-  variant?: 'water' | 'borderless' | 'wide';
+  // a separate line layer (continents), 'wide' for lines with a wide invisible tap zone,
+  // 'overlay' for see-through areas over the map (hemispheres).
+  variant?: 'water' | 'borderless' | 'wide' | 'overlay';
+  // Colour accent for lines: orientation lines, rivers, ranges, the faint grid.
+  tone?: 'orange' | 'river' | 'mountain' | 'grid';
 }
 
 // Visual state of a shape; drives a CSS modifier class.

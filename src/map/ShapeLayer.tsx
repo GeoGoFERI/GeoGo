@@ -16,6 +16,7 @@ const classFor = (shape: MapShape, state: ShapeState | undefined): string => {
     'shape',
     `shape--${shape.kind}`,
     shape.variant ? `shape--${shape.variant}` : '',
+    shape.tone ? `shape--tone-${shape.tone}` : '',
     shape.interactive ? 'shape--interactive' : '',
     state ? `shape--${state}` : '',
   ]
@@ -36,7 +37,7 @@ export const ShapeLayer = ({
     <>
       {drawn.map(({ shape, d }) => {
         const className = classFor(shape, states[shape.id]);
-        return shape.interactive ? (
+        const path = shape.interactive ? (
           <path
             key={shape.id}
             d={d}
@@ -50,6 +51,19 @@ export const ShapeLayer = ({
           />
         ) : (
           <path key={shape.id} d={d} className={className} aria-hidden="true" />
+        );
+        if (shape.variant !== 'wide' || !shape.interactive) return path;
+        // Thin lines get a wide invisible stroke underneath, so a near miss still counts.
+        return (
+          <g key={shape.id}>
+            <path
+              d={d}
+              className="shape-wide-hit"
+              aria-hidden="true"
+              onClick={() => onSelect(shape.id)}
+            />
+            {path}
+          </g>
         );
       })}
     </>

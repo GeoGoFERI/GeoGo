@@ -5,6 +5,7 @@ export type PromptBannerProps = {
   label: string;
   name: string;
   flagUrl?: string;
+  detail?: string;
   index: number;
   total: number;
   onHome: () => void;
@@ -14,6 +15,7 @@ export function PromptBanner({
   label,
   name,
   flagUrl,
+  detail,
   index,
   total,
   onHome,
@@ -44,6 +46,7 @@ export function PromptBanner({
           )}
           <span data-testid="prompt-name">{name}</span>
         </span>
+        {detail && <span className="banner__detail">{detail}</span>}
       </div>
       <ol className="banner__dots" aria-label={sl.questionOf(index + 1, total)}>
         {Array.from({ length: total }, (_, i) => (

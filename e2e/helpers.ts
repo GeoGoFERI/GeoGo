@@ -45,3 +45,18 @@ export async function tapShape(page: Page, id: string): Promise<void> {
 export async function settle(page: Page): Promise<void> {
   await page.waitForTimeout(600);
 }
+
+export async function tapLine(page: Page, id: string, at = 0.5): Promise<void> {
+  const point = await page.evaluate(
+    ([lineId, fraction]) => {
+      const path = document.querySelector<SVGPathElement>(`path[data-id="${String(lineId)}"]`);
+      const ctm = path?.getScreenCTM();
+      if (!path || !ctm) return null;
+      const p = path.getPointAtLength(path.getTotalLength() * Number(fraction));
+      return { x: ctm.a * p.x + ctm.c * p.y + ctm.e, y: ctm.b * p.x + ctm.d * p.y + ctm.f };
+    },
+    [id, at] as const,
+  );
+  if (!point) throw new Error(`No line ${id}`);
+  await page.mouse.click(point.x, point.y);
+}

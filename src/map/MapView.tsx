@@ -222,7 +222,14 @@ export function MapView({
             onSelect={select}
             onFocusShape={setActiveId}
           />
-          <HitLayer targets={geometry.targets} states={states} onSelect={select} />
+          <HitLayer
+            targets={geometry.targets}
+            states={states}
+            onSelect={select}
+            activeId={activeId}
+            shapeLabel={shapeLabel}
+            onFocusShape={setActiveId}
+          />
         </g>
       </svg>
       <ZoomButtons

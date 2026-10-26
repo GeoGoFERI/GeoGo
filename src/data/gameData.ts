@@ -8,6 +8,9 @@ import { computeGeoFacts, sortByName, type GeoFacts } from './geoFacts';
 import { placeFeatures } from './geometry';
 import { PLACES, PLACE_BY_GEO, PLACE_BY_ID, placeId } from './places';
 import { buildLevel1, type MarineData } from './level1';
+import { buildLevel2 } from './level2';
+import type { OrientationConfig } from '../core/orientation';
+import type { Question } from '../core/round';
 
 export type PlaceName = { nameSl: string; plural: boolean };
 
@@ -17,7 +20,8 @@ export type GameData = {
   items: readonly Item[];
   itemById: ReadonlyMap<string, Item>;
   countryShapes: readonly MapShape[];
-  shapesForLevel: (level: LevelId) => readonly MapShape[];
+  shapesFor: (level: LevelId, question?: Question) => readonly MapShape[];
+  orientation: OrientationConfig;
   nameOf: (id: string) => PlaceName | undefined;
   countryFact: (id: string) => CountryFact | undefined;
   featureOf: (id: string) => Feature<Geometry> | undefined;
@@ -46,11 +50,28 @@ export const buildGameData = ({ topology, marine }: MapSources): GameData => {
     if (f) countryShapes.push({ id: key, kind: 'area', feature: f, interactive: false });
   }
 
+  // Level 2 uses the sovereign countries for "which hemisphere" questions and as context.
+  const sovereign = new Map(
+    PLACES.filter((r) => r.status === 'country').flatMap((r) => {
+      const f = featureById.get(placeId(r));
+      return f ? [[placeId(r), f] as const] : [];
+    }),
+  );
+  const level2 = buildLevel2(sovereign);
+  items.push(...level2.items);
+  for (const item of level2.items) itemById.set(item.id, item);
+  const contextCountries: MapShape[] = countryShapes.map((s) => ({ ...s, interactive: false }));
+
   return {
     items,
     itemById,
     countryShapes,
-    shapesForLevel: (level) => (level === 1 ? level1.shapes : countryShapes),
+    shapesFor: (level, question) => {
+      if (level === 1) return level1.shapes;
+      if (level === 2) return level2.shapesFor(question?.choiceIds, contextCountries);
+      return countryShapes;
+    },
+    orientation: level2.config,
     nameOf: (id) => {
       const row = PLACE_BY_ID.get(id);
       const item = itemById.get(id);
@@ -67,7 +88,7 @@ export const buildGameData = ({ topology, marine }: MapSources): GameData => {
       });
       return { coastal: f.coastal, neighbours: sortByName(neighbourRows).map((r) => placeId(r)) };
     },
-    featureOf: (id) => featureById.get(id) ?? level1.features.get(id),
+    featureOf: (id) => featureById.get(id) ?? level1.features.get(id) ?? level2.features.get(id),
   };
 };
 
