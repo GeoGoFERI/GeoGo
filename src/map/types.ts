@@ -15,7 +15,7 @@ export interface MapShape {
   // 'overlay' for see-through areas over the map (hemispheres).
   variant?: 'water' | 'borderless' | 'wide' | 'overlay';
   // Colour accent for lines: orientation lines, rivers, ranges, the faint grid.
-  tone?: 'orange' | 'river' | 'mountain' | 'grid';
+  tone?: 'orange' | 'river' | 'mountain' | 'grid' | 'land' | 'lowland';
 }
 
 // Visual state of a shape; drives a CSS modifier class.

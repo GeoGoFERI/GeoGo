@@ -10,36 +10,57 @@ const SOURCES = {
   '50m': '.downloads/ne/ne_50m_geography_marine_polys.geojson',
 };
 
-// Which Natural Earth features make up each game item. Marginal seas that clearly belong to an
-// ocean are included so a tap on, say, the Caribbean still counts as the Atlantic.
+// Which Natural Earth features make up each game item, as [source, name] pairs. Marginal seas
+// that clearly belong to an ocean are included so a tap on, say, the Caribbean or the North Sea
+// still counts as the Atlantic. Seas whose ocean is disputed (Norwegian, Greenland) are left out.
+const a110 = (...names) => names.map((n) => ['110m', n]);
+const a50 = (...names) => names.map((n) => ['50m', n]);
 const ITEMS = {
-  'ocean-atlantski': {
-    source: '110m',
-    names: [
+  'ocean-atlantski': [
+    ...a110(
       'North Atlantic Ocean',
       'South Atlantic Ocean',
       'Caribbean Sea',
       'Gulf of Mexico',
       'Labrador Sea',
-    ],
-  },
-  'ocean-tihi': {
-    source: '110m',
-    names: [
-      'North Pacific Ocean',
-      'South Pacific Ocean',
-      'Philippine Sea',
-      'Tasman Sea',
-      'South China Sea',
-      'Gulf of Alaska',
-      'Sea of Okhotsk',
-      'Coral Sea',
-      'Sea of Japan',
-    ],
-  },
-  'ocean-indijski': { source: '110m', names: ['INDIAN OCEAN', 'Bay of Bengal', 'Arabian Sea'] },
-  'ocean-arkticni': { source: '110m', names: ['Arctic Ocean', 'Beaufort Sea', 'Baffin Bay'] },
-  'ocean-juzni': { source: '110m', names: ['SOUTHERN OCEAN', 'Weddell Sea', 'Ross Sea'] },
+    ),
+    ...a50(
+      'North Sea',
+      'Irish Sea',
+      'Bay of Biscay',
+      'English Channel',
+      'Bristol Channel',
+      'Inner Seas',
+    ),
+  ],
+  'ocean-tihi': a110(
+    'North Pacific Ocean',
+    'South Pacific Ocean',
+    'Philippine Sea',
+    'Tasman Sea',
+    'South China Sea',
+    'Gulf of Alaska',
+    'Sea of Okhotsk',
+    'Coral Sea',
+    'Sea of Japan',
+  ),
+  'ocean-indijski': a110('INDIAN OCEAN', 'Bay of Bengal', 'Arabian Sea'),
+  'ocean-arkticni': [
+    ...a110('Arctic Ocean', 'Beaufort Sea', 'Baffin Bay'),
+    ...a50('Barents Sea', 'Kara Sea', 'White Sea'),
+  ],
+  'ocean-juzni': a110('SOUTHERN OCEAN', 'Weddell Sea', 'Ross Sea'),
+  // Level 4 seas, from the more detailed 50m layer.
+  'sea-sredozemsko': a50(
+    'Mediterranean Sea',
+    'Tyrrhenian Sea',
+    'Ionian Sea',
+    'Aegean Sea',
+    'Balearic Sea',
+    'Golfe du Lion',
+  ),
+  'sea-jadransko': a50('Adriatic Sea'),
+  'sea-crno': a50('Black Sea'),
 };
 
 // drops points closer than `step` degrees to the last kept one; land is drawn on top anyway
@@ -70,9 +91,10 @@ const featuresOf = (source) => {
 };
 
 const out = {};
-for (const [id, { source, names, step = 0.3 }] of Object.entries(ITEMS)) {
+for (const [id, parts] of Object.entries(ITEMS)) {
   const polygons = [];
-  for (const name of names) {
+  for (const [source, name] of parts) {
+    const step = source === '50m' ? 0.1 : 0.3;
     const feature = featuresOf(source).find((f) => f.properties.name === name);
     if (!feature) throw new Error(`${id}: no feature named ${name}`);
     const g = feature.geometry;

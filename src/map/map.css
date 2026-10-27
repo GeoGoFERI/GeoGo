@@ -184,12 +184,6 @@
   stroke: var(--geogo-ocean);
 }
 
-.shape--tone-mountain {
-  stroke: #8a6a3c;
-  stroke-dasharray: 1 6;
-  stroke-width: 7px;
-}
-
 .shape--tone-grid {
   stroke: var(--geogo-ocean);
   stroke-opacity: 0.35;
@@ -265,5 +259,63 @@
 
 .hit-dot--point:focus-visible {
   fill: var(--map-hover);
+  stroke-width: 4px;
+}
+
+/* Level 4 areas, told apart by fill and outline as well as colour. */
+.shape--area.shape--tone-land {
+  fill: var(--geogo-yellow);
+  fill-opacity: 0.45;
+  stroke: var(--geogo-navy);
+  stroke-width: 2px;
+}
+
+.shape--area.shape--tone-lowland {
+  fill: var(--geogo-green);
+  fill-opacity: 0.45;
+  stroke: var(--geogo-navy);
+  stroke-width: 2px;
+  stroke-dasharray: 6 4;
+}
+
+.shape--area.shape--tone-mountain {
+  fill: var(--geogo-orange);
+  fill-opacity: 0.6;
+  stroke: var(--geogo-orange-deep);
+  stroke-width: 2px;
+  stroke-dasharray: none;
+}
+
+.shape--area.shape--tone-land.shape--correct,
+.shape--area.shape--tone-lowland.shape--correct,
+.shape--area.shape--tone-mountain.shape--correct {
+  fill: var(--map-correct);
+  fill-opacity: 0.9;
+}
+
+.shape--area.shape--tone-land.shape--wrong,
+.shape--area.shape--tone-lowland.shape--wrong,
+.shape--area.shape--tone-mountain.shape--wrong {
+  fill: var(--map-wrong);
+  fill-opacity: 0.9;
+}
+
+@media (hover: hover) {
+  .shape--area.shape--interactive.shape--tone-land:hover,
+  .shape--area.shape--interactive.shape--tone-lowland:hover,
+  .shape--area.shape--interactive.shape--tone-mountain:hover {
+    fill: var(--map-hover);
+    fill-opacity: 0.9;
+  }
+}
+
+.shape--area.shape--tone-land.shape--flash,
+.shape--area.shape--tone-lowland.shape--flash,
+.shape--area.shape--tone-mountain.shape--flash {
+  fill-opacity: 0.9;
+}
+
+/* Rivers are drawn thicker than country borders. */
+.shape--line.shape--tone-river {
   stroke-width: 4px;
 }

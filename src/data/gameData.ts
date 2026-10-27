@@ -9,6 +9,7 @@ import { placeFeatures } from './geometry';
 import { PLACES, PLACE_BY_GEO, PLACE_BY_ID, placeId } from './places';
 import { buildLevel1, type MarineData } from './level1';
 import { buildLevel2 } from './level2';
+import { buildLevel4, type NatureData } from './level4';
 import type { OrientationConfig } from '../core/orientation';
 import type { Question } from '../core/round';
 
@@ -22,14 +23,15 @@ export type GameData = {
   countryShapes: readonly MapShape[];
   shapesFor: (level: LevelId, question?: Question) => readonly MapShape[];
   orientation: OrientationConfig;
+  choicesFor: (level: LevelId, itemId: string) => readonly string[] | undefined;
   nameOf: (id: string) => PlaceName | undefined;
   countryFact: (id: string) => CountryFact | undefined;
   featureOf: (id: string) => Feature<Geometry> | undefined;
 };
 
-export type MapSources = { topology: WorldTopology; marine: MarineData };
+export type MapSources = { topology: WorldTopology; marine: MarineData; nature: NatureData };
 
-export const buildGameData = ({ topology, marine }: MapSources): GameData => {
+export const buildGameData = ({ topology, marine, nature }: MapSources): GameData => {
   const features = placeFeatures(topology);
   const facts: ReadonlyMap<string, GeoFacts> = computeGeoFacts(topology);
   const level1 = buildLevel1(topology, marine);
@@ -62,6 +64,10 @@ export const buildGameData = ({ topology, marine }: MapSources): GameData => {
   for (const item of level2.items) itemById.set(item.id, item);
   const contextCountries: MapShape[] = countryShapes.map((s) => ({ ...s, interactive: false }));
 
+  const level4 = buildLevel4({ nature, marine, countries: featureById });
+  items.push(...level4.items);
+  for (const item of level4.items) itemById.set(item.id, item);
+
   return {
     items,
     itemById,
@@ -69,9 +75,21 @@ export const buildGameData = ({ topology, marine }: MapSources): GameData => {
     shapesFor: (level, question) => {
       if (level === 1) return level1.shapes;
       if (level === 2) return level2.shapesFor(question?.choiceIds, contextCountries);
+      if (level === 4) {
+        const group = question ? level4.groupOf(question.itemId) : undefined;
+        return level4.shapesFor(group, contextCountries, level1.oceanShapes);
+      }
       return countryShapes;
     },
     orientation: level2.config,
+    choicesFor: (level, itemId) => {
+      if (level === 2) return level2.config.choiceSets.find((set) => set.includes(itemId));
+      if (level === 4) {
+        const group = level4.groupOf(itemId);
+        return group ? level4.membersOf(group) : undefined;
+      }
+      return undefined;
+    },
     nameOf: (id) => {
       const row = PLACE_BY_ID.get(id);
       const item = itemById.get(id);
@@ -88,15 +106,27 @@ export const buildGameData = ({ topology, marine }: MapSources): GameData => {
       });
       return { coastal: f.coastal, neighbours: sortByName(neighbourRows).map((r) => placeId(r)) };
     },
-    featureOf: (id) => featureById.get(id) ?? level1.features.get(id) ?? level2.features.get(id),
+    featureOf: (id) =>
+      featureById.get(id) ??
+      level1.features.get(id) ??
+      level2.features.get(id) ??
+      level4.features.get(id),
   };
 };
 
 let cached: Promise<GameData> | undefined;
 
 export const loadGameData = (): Promise<GameData> => {
-  cached ??= Promise.all([loadWorld50(), import('./generated/marine.json')]).then(
-    ([topology, marine]) => buildGameData({ topology, marine: marine.default as MarineData }),
+  cached ??= Promise.all([
+    loadWorld50(),
+    import('./generated/marine.json'),
+    import('./generated/europe-nature.json'),
+  ]).then(([topology, marine, nature]) =>
+    buildGameData({
+      topology,
+      marine: marine.default as MarineData,
+      nature: nature.default as unknown as NatureData,
+    }),
   );
   return cached;
 };

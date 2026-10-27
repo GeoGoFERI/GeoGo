@@ -57,6 +57,7 @@ export const buildLevel1 = (topology: WorldTopology, marine: MarineData): Level1
       nameSl: ocean.nameSl,
       geo: ocean.id,
       region: 'world',
+      group: 'water',
       curriculum: CURRICULUM,
     });
   }

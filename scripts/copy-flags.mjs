@@ -28,4 +28,6 @@ for (const code of [...codes].sort()) {
   if (available.has(file)) copyFileSync(`${SOURCE}/${file}`, `${OUT}/${code.toLowerCase()}.svg`);
   else missing.push(code);
 }
-console.log(`Copied ${codes.size - missing.length} flags. Missing: ${missing.join(', ') || 'none'}`);
+console.log(
+  `Copied ${codes.size - missing.length} flags. Missing: ${missing.join(', ') || 'none'}`,
+);

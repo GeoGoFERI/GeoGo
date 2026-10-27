@@ -107,7 +107,7 @@ export function App(): ReactElement {
               dispatch({
                 type: 'startRound',
                 level: view.round.level,
-                questions: replayRound(view.summary.weakItemIds, data, rng),
+                questions: replayRound(view.round.level, view.summary.weakItemIds, data, rng),
               })
             }
             onHome={() => dispatch({ type: 'home' })}

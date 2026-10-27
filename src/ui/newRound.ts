@@ -18,21 +18,24 @@ export const newRound = (
   rng: Rng,
 ): Question[] => {
   const pool = itemsInLevel(data.items, level);
-  if (hooks.round) return fixedRound(hooks.round, data);
+  if (hooks.round) return fixedRound(level, hooks.round, data);
   if (level === 2)
     return buildOrientationRound(data.orientation, progress.items, progress.roundsPlayed, rng);
-  return buildFindRound(pool, progress.items, progress.roundsPlayed, rng);
+  return withChoices(level, buildFindRound(pool, progress.items, progress.roundsPlayed, rng), data);
 };
 
-const choicesFor = (id: string, data: GameData): readonly string[] | undefined => {
-  return data.orientation.choiceSets.find((set) => set.includes(id));
-};
+function withChoices(level: LevelId, questions: Question[], data: GameData): Question[] {
+  return questions.map((q) => {
+    const choiceIds = data.choicesFor(level, q.itemId);
+    return choiceIds ? { ...q, choiceIds } : q;
+  });
+}
 
-function fixedRound(entries: readonly string[], data: GameData): Question[] {
+function fixedRound(level: LevelId, entries: readonly string[], data: GameData): Question[] {
   return entries.flatMap((entry): Question[] => {
     const [kind, countryId, answer] = entry.split(':');
     if (kind === 'hemisphere' && countryId && answer) {
-      const choiceIds = choicesFor(answer, data) ?? [answer];
+      const choiceIds = data.choicesFor(2, answer) ?? [answer];
       return [
         {
           id: entry,
@@ -45,20 +48,22 @@ function fixedRound(entries: readonly string[], data: GameData): Question[] {
       ];
     }
     const item = data.itemById.get(entry);
-    return item ? [findQuestion(item, choicesFor(item.id, data))] : [];
+    return item ? [findQuestion(item, data.choicesFor(level, item.id))] : [];
   });
 }
 
-export const replayRound = (ids: readonly string[], data: GameData, rng: Rng): Question[] => {
+export const replayRound = (
+  level: LevelId,
+  ids: readonly string[],
+  data: GameData,
+  rng: Rng,
+): Question[] => {
   const items = ids.flatMap((id) => {
     const item = data.itemById.get(id);
     return item ? [item] : [];
   });
-  // Orientation items keep their choice pair when replayed.
-  return buildReplayRound(items, rng).map((q) => {
-    const choiceIds = choicesFor(q.itemId, data);
-    return choiceIds ? { ...q, choiceIds } : q;
-  });
+  // Orientation pairs and Level 4 families stay the same when replayed.
+  return withChoices(level, buildReplayRound(items, rng), data);
 };
 
 export const levelItems = (data: GameData | undefined, level: LevelId): Item[] => {

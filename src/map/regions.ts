@@ -9,7 +9,8 @@ export type RegionId = Region;
 // Hard-coded lon/lat boxes [west, south, east, north].
 export const REGION_BOXES: Record<RegionId, [number, number, number, number]> = {
   world: [-180, -60, 180, 84],
-  europe: [-25, 34, 50, 71],
+  // East to 60 degrees so the Ural and the Volga are in view.
+  europe: [-25, 34, 60, 71],
   asia: [25, -11, 150, 78],
   africa: [-20, -36, 52, 38],
   namerica: [-170, 7, -50, 84],
