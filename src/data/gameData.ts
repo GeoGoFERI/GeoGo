@@ -10,6 +10,7 @@ import { PLACES, PLACE_BY_GEO, PLACE_BY_ID, placeId } from './places';
 import { buildLevel1, type MarineData } from './level1';
 import { buildLevel2 } from './level2';
 import { buildLevel4, type NatureData } from './level4';
+import { FACTS } from './facts';
 import type { OrientationConfig } from '../core/orientation';
 import type { Question } from '../core/round';
 
@@ -31,12 +32,13 @@ export type GameData = {
 
 export type MapSources = { topology: WorldTopology; marine: MarineData; nature: NatureData };
 
-export const buildGameData = ({ topology, marine, nature }: MapSources): GameData => {
+export function buildGameData({ topology, marine, nature }: MapSources): GameData {
   const features = placeFeatures(topology);
   const facts: ReadonlyMap<string, GeoFacts> = computeGeoFacts(topology);
   const level1 = buildLevel1(topology, marine);
   const items = [...level1.items, ...europeCountryItems(facts)];
   const itemById = new Map(items.map((i) => [i.id, i]));
+  // Hand-written facts are attached once every item exists (see the end of this function).
 
   const countryShapes: MapShape[] = [];
   const featureById = new Map<string, Feature<Geometry>>();
@@ -67,6 +69,14 @@ export const buildGameData = ({ topology, marine, nature }: MapSources): GameDat
   const level4 = buildLevel4({ nature, marine, countries: featureById });
   items.push(...level4.items);
   for (const item of level4.items) itemById.set(item.id, item);
+
+  for (const [index, item] of items.entries()) {
+    const fact = FACTS[item.id];
+    if (!fact) continue;
+    const withFact = { ...item, fact };
+    items[index] = withFact;
+    itemById.set(item.id, withFact);
+  }
 
   return {
     items,
@@ -112,7 +122,7 @@ export const buildGameData = ({ topology, marine, nature }: MapSources): GameDat
       level2.features.get(id) ??
       level4.features.get(id),
   };
-};
+}
 
 let cached: Promise<GameData> | undefined;
 
