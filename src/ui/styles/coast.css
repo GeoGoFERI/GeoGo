@@ -1,0 +1,81 @@
+.coast {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 16px 32px;
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+}
+
+.coast__count,
+.coast__score {
+  margin: 0;
+  font-weight: 600;
+}
+
+.coast__headline {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.coast__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  box-shadow: var(--shadow-hard);
+}
+
+.coast__card p {
+  margin: 0;
+}
+
+.coast__bins {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.coast__bin {
+  flex: 1 1 200px;
+  background: var(--geogo-paper);
+}
+
+.coast__bin:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+/* After a pick the right bin turns green with a thick outline (shape, not only colour). */
+.coast__bin--answer {
+  background: var(--geogo-green);
+  outline: 3px solid var(--geogo-navy);
+  outline-offset: -8px;
+}
+
+.coast__bin[aria-pressed='true']:not(.coast__bin--answer) {
+  background: var(--geogo-orange);
+}
+
+.coast__feedback {
+  width: 100%;
+  text-align: left;
+}
+
+.toast--right {
+  background: var(--geogo-green);
+}
+
+.coast__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}

@@ -62,6 +62,22 @@ export const sl = {
   modes: {
     find: 'Najdi državo',
     fact: 'Uganka',
+    coast: 'Obmorska ali celinska?',
+  },
+  coastPrompt: 'Kam spada ta država?',
+  cardOf: (n: number, total: number): string => `Karta ${String(n)} od ${String(total)}`,
+  coastRight: 'Tako je!',
+  coastWrong: 'Ni čisto tako.',
+  // "Srbija: celinska država" (the label is lowercase inside the sentence)
+  coastAnswer: (name: string, label: string): string =>
+    `${name}: ${label.charAt(0).toLowerCase()}${label.slice(1)}`,
+  coastTip: 'Obmorska država ima morsko obalo, celinska država pa je nima.',
+  coastScore: (correct: number, total: number): string =>
+    `${String(correct)} od ${String(total)} pravilno`,
+  coastHeadlines: {
+    excellent: 'Obmorske in celinske države že odlično ločiš!',
+    good: 'Obmorske in celinske države že dobro ločiš.',
+    practice: 'Lepo ti gre. Z vajo bo še bolje!',
   },
   hintLines: 'Namig: ekvator poteka vodoravno, poldnevnik pa navpično.',
   hintNorthSouth: 'Namig: ekvator loči severno in južno poloblo.',

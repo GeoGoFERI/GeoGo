@@ -13,6 +13,9 @@ import { StartScreen, type LevelCardInfo } from './StartScreen';
 import { PlayScreen } from './PlayScreen';
 import { SummaryScreen } from './SummaryScreen';
 import { AtlasScreen } from './AtlasScreen';
+import { CoastScreen } from './CoastScreen';
+import { dealCoastCards } from '../core/coastGame';
+import { itemsInLevel } from '../core/item';
 import { FactCard } from './FactCard';
 import { factContent } from './factContent';
 import { Confetti } from './Confetti';
@@ -53,8 +56,17 @@ export function App(): ReactElement {
     [data, progress],
   );
 
+  const startCoast = (): void => {
+    if (data)
+      dispatch({ type: 'startCoast', cards: dealCoastCards(itemsInLevel(data.items, 3), rng) });
+  };
+
   const startLevel = (level: LevelId): void => {
     if (!data) return;
+    if (level === 3 && mode === 'coast') {
+      startCoast();
+      return;
+    }
     dispatch({
       type: 'startRound',
       level,
@@ -77,7 +89,7 @@ export function App(): ReactElement {
 
   return (
     <div className="app">
-      {(view.screen === 'atlas' || view.screen === 'summary') && (
+      {(view.screen === 'atlas' || view.screen === 'summary' || view.screen === 'coast') && (
         <header className="app__header">
           <button
             type="button"
@@ -100,6 +112,16 @@ export function App(): ReactElement {
             mode={mode}
             onMode={setMode}
             {...(status ? { status } : {})}
+          />
+        )}
+        {view.screen === 'coast' && data && (
+          <CoastScreen
+            game={view.game}
+            data={data}
+            onPick={(choice) => dispatch({ type: 'coast', action: { type: 'pick', choice } })}
+            onNext={() => dispatch({ type: 'coast', action: { type: 'next' } })}
+            onAgain={startCoast}
+            onHome={() => dispatch({ type: 'home' })}
           />
         )}
         {view.screen === 'atlas' && data && (

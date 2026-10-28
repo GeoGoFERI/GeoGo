@@ -68,7 +68,7 @@ export const StartScreen = ({
       </ul>
       {selected === 3 && selectedInfo?.available && (
         <div className="start__modes" role="group" aria-label={sl.modeLabel}>
-          {(['find', 'fact'] as const).map((m) => (
+          {(['find', 'fact', 'coast'] as const).map((m) => (
             <button
               key={m}
               type="button"

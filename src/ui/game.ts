@@ -9,6 +9,13 @@ import {
 } from '../core/question';
 import type { Question } from '../core/round';
 import { buildSummary, type RoundSummary } from '../core/summary';
+import {
+  coastReducer,
+  startCoastGame,
+  type CoastAction,
+  type CoastCard,
+  type CoastGameState,
+} from '../core/coastGame';
 
 export type Round = {
   level: LevelId;
@@ -21,7 +28,8 @@ export type View =
   | { screen: 'start' }
   | { screen: 'atlas' }
   | { screen: 'play' | 'fact'; round: Round; question: QuestionState }
-  | { screen: 'summary'; round: Round; summary: RoundSummary };
+  | { screen: 'summary'; round: Round; summary: RoundSummary }
+  | { screen: 'coast'; game: CoastGameState };
 
 export type GameState = { view: View; progress: Progress };
 
@@ -30,6 +38,8 @@ export type GameAction =
   | { type: 'click'; id: string }
   | { type: 'help' }
   | { type: 'next'; items: ReadonlyMap<string, Item> }
+  | { type: 'startCoast'; cards: readonly CoastCard[] }
+  | { type: 'coast'; action: CoastAction }
   | { type: 'openAtlas' }
   | { type: 'home' };
 
@@ -70,6 +80,13 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         progress: recordRound(state.progress, results),
         view: { screen: 'summary', round, summary: buildSummary(results, action.items) },
       };
+    }
+    case 'startCoast':
+      return { ...state, view: { screen: 'coast', game: startCoastGame(action.cards) } };
+    case 'coast': {
+      if (view.screen !== 'coast') return state;
+      const game = coastReducer(view.game, action.action);
+      return game === view.game ? state : { ...state, view: { screen: 'coast', game } };
     }
     case 'openAtlas':
       return { ...state, view: { screen: 'atlas' } };

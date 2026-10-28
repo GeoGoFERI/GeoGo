@@ -17,7 +17,7 @@ export const makeRng = (hooks: TestHooks): Rng => {
   return seededRng(hooks.seed ?? Date.now());
 };
 
-export type PlayMode = 'find' | 'fact';
+export type PlayMode = 'find' | 'fact' | 'coast';
 
 export function newRound(
   level: LevelId,
