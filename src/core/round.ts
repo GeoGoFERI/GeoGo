@@ -65,3 +65,7 @@ export function buildFixedRound(pool: readonly Item[], ids: readonly string[]): 
     return item ? [findQuestion(item)] : [];
   });
 }
+
+export function asFactQuestions(questions: readonly Question[]): Question[] {
+  return questions.map((q) => ({ ...q, id: `fact:${q.itemId}`, mode: 'fact' }));
+}

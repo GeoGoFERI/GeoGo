@@ -94,3 +94,17 @@
   opacity: 0.55;
   cursor: default;
 }
+
+.start__modes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Chosen mode: yellow plus a check-like inner ring, not colour alone. */
+.mode-btn[aria-pressed='true'] {
+  background: var(--geogo-yellow);
+  outline: 3px solid var(--geogo-navy);
+  outline-offset: -7px;
+}

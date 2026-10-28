@@ -20,7 +20,9 @@ test('Level 4: a mountain range, a river and a sea', async ({ page }) => {
   await expect(page.getByRole('dialog')).toContainText('mlado nagubano gorstvo');
   if (process.env.SHOT_DIR) {
     await settle(page);
-    await page.screenshot({ path: `${process.env.SHOT_DIR}/level4-fact-${test.info().project.name}.png` });
+    await page.screenshot({
+      path: `${process.env.SHOT_DIR}/level4-fact-${test.info().project.name}.png`,
+    });
   }
   await page.getByRole('button', { name: 'Naprej' }).click();
   await settle(page);

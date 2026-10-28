@@ -10,6 +10,8 @@ import { FeedbackToast } from './FeedbackToast';
 import { PromptBanner } from './PromptBanner';
 import { tier2Hint } from './hints';
 import { promptFor } from './prompt';
+import { riddleText, riddlesFor } from './riddleContent';
+import { speak, stopSpeaking, useSlovenianVoice } from './speech';
 import { BulbIcon } from './icons';
 import type { Round } from './game';
 import './styles/play.css';
@@ -43,6 +45,12 @@ export function PlayScreen({
   const hint = useMemo(() => tier2Hint(q, data), [q, data]);
   const prompt = useMemo(() => promptFor(q, data), [q, data]);
   const shapes = data.shapesFor(level, q);
+  const voice = useSlovenianVoice();
+  const riddle = q.mode === 'fact' ? riddlesFor(data).get(q.promptId) : undefined;
+  const readAloud = voice && riddle ? (): void => speak(riddleText(riddle), voice) : undefined;
+
+  // Never keep reading a riddle once the question has changed.
+  useEffect(() => stopSpeaking, [q.id]);
 
   // Help tiers move the view: 1 zooms to the target's surroundings, 3 closer in to the flash.
   useEffect(() => {
@@ -95,6 +103,7 @@ export function PlayScreen({
     <section className="play">
       <PromptBanner
         {...prompt}
+        {...(readAloud ? { onReadAloud: readAloud } : {})}
         index={round.index}
         total={round.questions.length}
         onHome={onHome}

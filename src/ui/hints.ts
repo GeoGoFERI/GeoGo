@@ -17,6 +17,11 @@ export function tier2Hint(question: Question, data: GameData): Tier2Hint {
 
   const item = data.itemById.get(question.promptId);
   if (!item) return { text: sl.hintZoom };
+  // In the riddle mode the neighbours are already in the riddle, so tier 2 names the region.
+  if (item.kind === 'country' && question.mode === 'fact') {
+    const group = item.group ? sl.groups[item.group] : undefined;
+    return { text: group ? sl.hintGroup(group) : sl.hintZoom };
+  }
   if (item.kind === 'country') {
     const neighbourId = data.countryFact(item.id)?.neighbours[0];
     const neighbourName = neighbourId ? data.nameOf(neighbourId)?.nameSl : undefined;

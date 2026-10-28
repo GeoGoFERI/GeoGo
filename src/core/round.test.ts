@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { seededRng } from './random';
-import { buildFindRound, buildFixedRound, buildReplayRound, ROUND_SIZE } from './round';
+import {
+  asFactQuestions,
+  buildFindRound,
+  buildFixedRound,
+  buildReplayRound,
+  ROUND_SIZE,
+} from './round';
 import { makeItems } from './testItems';
 import type { ItemStats } from './leitner';
 
@@ -47,5 +53,13 @@ describe('replay and fixed rounds', () => {
   it('builds a fixed round in the given order and skips unknown ids', () => {
     const round = buildFixedRound(makeItems(5), ['country-3', 'nope', 'country-1']);
     expect(round.map((q) => q.itemId)).toEqual(['country-3', 'country-1']);
+  });
+});
+
+describe('asFactQuestions', () => {
+  it('keeps the target and changes the mode', () => {
+    const [q] = asFactQuestions(buildFixedRound(makeItems(2), ['country-1']));
+    expect(q).toMatchObject({ mode: 'fact', itemId: 'country-1', acceptIds: ['country-1'] });
+    expect(q?.id).toBe('fact:country-1');
   });
 });

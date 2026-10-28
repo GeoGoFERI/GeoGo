@@ -6,7 +6,7 @@ import { loadProgress, saveProgress } from '../core/progress';
 import { browserStore } from '../core/storage';
 import { sl } from '../i18n/sl';
 import { gameReducer, type GameState } from './game';
-import { levelItems, makeRng, newRound, replayRound } from './newRound';
+import { levelItems, makeRng, newRound, replayRound, type PlayMode } from './newRound';
 import { readTestHooks } from './testHooks';
 import { useGameData } from './useGameData';
 import { StartScreen, type LevelCardInfo } from './StartScreen';
@@ -29,6 +29,7 @@ function initState(): GameState {
 export function App(): ReactElement {
   const [state, dispatch] = useReducer(gameReducer, undefined, initState);
   const [selected, setSelected] = useState<LevelId>(3);
+  const [mode, setMode] = useState<PlayMode>('find');
   const dataState = useGameData();
   const data = dataState.status === 'ready' ? dataState.data : undefined;
   const { view, progress } = state;
@@ -54,7 +55,11 @@ export function App(): ReactElement {
 
   const startLevel = (level: LevelId): void => {
     if (!data) return;
-    dispatch({ type: 'startRound', level, questions: newRound(level, data, progress, hooks, rng) });
+    dispatch({
+      type: 'startRound',
+      level,
+      questions: newRound(level, data, progress, hooks, rng, level === 3 ? mode : 'find'),
+    });
   };
 
   // The item the fact card is about: the prompt item, or the hemisphere for a hemisphere question.
@@ -92,6 +97,8 @@ export function App(): ReactElement {
             onSelect={setSelected}
             onStart={() => startLevel(selected)}
             onAtlas={() => dispatch({ type: 'openAtlas' })}
+            mode={mode}
+            onMode={setMode}
             {...(status ? { status } : {})}
           />
         )}
@@ -107,7 +114,13 @@ export function App(): ReactElement {
               dispatch({
                 type: 'startRound',
                 level: view.round.level,
-                questions: replayRound(view.round.level, view.summary.weakItemIds, data, rng),
+                questions: replayRound(
+                  view.round.level,
+                  view.summary.weakItemIds,
+                  data,
+                  rng,
+                  view.round.questions[0]?.mode === 'fact' ? 'fact' : 'find',
+                ),
               })
             }
             onHome={() => dispatch({ type: 'home' })}

@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import type { LevelId } from '../core/item';
 import { sl } from '../i18n/sl';
 import { LevelIcon, StarIcon } from './icons';
+import type { PlayMode } from './newRound';
 import logoUrl from './assets/logo.webp';
 import './styles/start.css';
 
@@ -18,6 +19,8 @@ export type StartScreenProps = {
   onSelect: (level: LevelId) => void;
   onStart: () => void;
   onAtlas: () => void;
+  mode: PlayMode;
+  onMode: (mode: PlayMode) => void;
   status?: string;
 };
 
@@ -27,6 +30,8 @@ export const StartScreen = ({
   onSelect,
   onStart,
   onAtlas,
+  mode,
+  onMode,
   status,
 }: StartScreenProps): ReactElement => {
   const selectedInfo = levels.find((l) => l.level === selected);
@@ -61,6 +66,21 @@ export const StartScreen = ({
           </li>
         ))}
       </ul>
+      {selected === 3 && selectedInfo?.available && (
+        <div className="start__modes" role="group" aria-label={sl.modeLabel}>
+          {(['find', 'fact'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              className="btn btn--plain mode-btn"
+              aria-pressed={mode === m}
+              onClick={() => onMode(m)}
+            >
+              {sl.modes[m]}
+            </button>
+          ))}
+        </div>
+      )}
       {status && (
         <p className="start__status" role="status">
           {status}
