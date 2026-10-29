@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import type { LevelId } from '../core/item';
 import { sl } from '../i18n/sl';
 import { LevelIcon, StarIcon } from './icons';
-import type { PlayMode } from './newRound';
+import { modesFor, type PlayMode } from './newRound';
 import logoUrl from './assets/logo.webp';
 import './styles/start.css';
 
@@ -66,9 +66,9 @@ export const StartScreen = ({
           </li>
         ))}
       </ul>
-      {selected === 3 && selectedInfo?.available && (
+      {modesFor(selected).length > 1 && selectedInfo?.available && (
         <div className="start__modes" role="group" aria-label={sl.modeLabel}>
-          {(['find', 'fact', 'coast'] as const).map((m) => (
+          {modesFor(selected).map((m) => (
             <button
               key={m}
               type="button"
@@ -76,7 +76,7 @@ export const StartScreen = ({
               aria-pressed={mode === m}
               onClick={() => onMode(m)}
             >
-              {sl.modes[m]}
+              {selected === 2 && m === 'find' ? sl.modes.lines : sl.modes[m]}
             </button>
           ))}
         </div>

@@ -10,6 +10,7 @@ import { FeedbackToast } from './FeedbackToast';
 import { PromptBanner } from './PromptBanner';
 import { tier2Hint } from './hints';
 import { promptFor } from './prompt';
+import { displayName } from './names';
 import { riddleText, riddlesFor } from './riddleContent';
 import { speak, stopSpeaking, useSlovenianVoice } from './speech';
 import { BulbIcon } from './icons';
@@ -77,6 +78,7 @@ export function PlayScreen({
     // A "which hemisphere" question shows its country coloured in.
     if (q.mode === 'hemisphere') s[q.promptId] = 'hint';
     if (hintTier >= 2 && hint.highlightId) s[hint.highlightId] = 'hint';
+    if (hintTier >= 2) for (const id of hint.highlightIds ?? []) s[id] = 'hint';
     if (feedback.type === 'wrong') s[feedback.clickedId] = 'wrong';
     if (hintTier >= 3) s[targetId] = 'flash';
     if (question.done) s[targetId] = 'correct';
@@ -85,7 +87,7 @@ export function PlayScreen({
 
   let toast: ReactElement | undefined;
   if (feedback.type === 'wrong') {
-    const clicked = data.nameOf(feedback.clickedId);
+    const clicked = displayName(feedback.clickedId, data);
     if (clicked)
       toast = (
         <FeedbackToast
@@ -117,6 +119,7 @@ export function PlayScreen({
           labels={sl.mapLabels}
           shapeLabel={shapeLabel}
           region={levelById(level).region}
+          {...(q.mode === 'coords' ? { annotations: data.gridAnnotations(sl.gridWords) } : {})}
         />
         <div className="play__toasts">{toast}</div>
         {!question.done && (

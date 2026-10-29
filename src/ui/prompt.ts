@@ -3,6 +3,7 @@ import type { GameData } from '../data/gameData';
 import { flagUrl } from '../data/flags';
 import { sl } from '../i18n/sl';
 import { riddlesFor } from './riddleContent';
+import { parsePointId } from '../core/grid';
 
 // What the sticky banner shows for a question.
 export interface PromptContent {
@@ -25,6 +26,11 @@ export function promptFor(question: Question, data: GameData): PromptContent {
       name: `${name}?`,
       detail: ns ? sl.hemisphereDetail.ns : sl.hemisphereDetail.ew,
     };
+  }
+  if (question.mode === 'coords') {
+    const p = parsePointId(question.promptId);
+    const lines = p ? [{ label: sl.fromEquator(p.lat) }, { label: sl.fromMeridian(p.lon) }] : [];
+    return { label: sl.findPoint, name: '', lines };
   }
   if (question.mode === 'fact') {
     const riddle = riddlesFor(data).get(question.promptId);

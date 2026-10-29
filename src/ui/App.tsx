@@ -5,8 +5,8 @@ import { isMastered } from '../core/leitner';
 import { loadProgress, saveProgress } from '../core/progress';
 import { browserStore } from '../core/storage';
 import { sl } from '../i18n/sl';
-import { gameReducer, type GameState } from './game';
-import { levelItems, makeRng, newRound, replayRound, type PlayMode } from './newRound';
+import { gameReducer, type GameState, type Round } from './game';
+import { levelItems, makeRng, modesFor, newRound, replayRound, type PlayMode } from './newRound';
 import { readTestHooks } from './testHooks';
 import { useGameData } from './useGameData';
 import { StartScreen, type LevelCardInfo } from './StartScreen';
@@ -17,7 +17,7 @@ import { CoastScreen } from './CoastScreen';
 import { dealCoastCards } from '../core/coastGame';
 import { itemsInLevel } from '../core/item';
 import { FactCard } from './FactCard';
-import { factContent } from './factContent';
+import { factContent, pointFactContent } from './factContent';
 import { Confetti } from './Confetti';
 import logoUrl from './assets/logo.webp';
 
@@ -61,24 +61,41 @@ export function App(): ReactElement {
       dispatch({ type: 'startCoast', cards: dealCoastCards(itemsInLevel(data.items, 3), rng) });
   };
 
-  const startLevel = (level: LevelId): void => {
+  const startLevel = (level: LevelId, playMode: PlayMode = mode): void => {
     if (!data) return;
-    if (level === 3 && mode === 'coast') {
+    // A mode chosen for another level falls back to plain "find".
+    const effective = modesFor(level).includes(playMode) ? playMode : 'find';
+    if (effective === 'coast') {
       startCoast();
       return;
     }
     dispatch({
       type: 'startRound',
       level,
-      questions: newRound(level, data, progress, hooks, rng, level === 3 ? mode : 'find'),
+      questions: newRound(level, data, progress, hooks, rng, effective),
+      track: effective !== 'coords',
     });
   };
 
-  // The item the fact card is about: the prompt item, or the hemisphere for a hemisphere question.
+  // What the fact card shows: the prompt item, the hemisphere after a hemisphere question,
+  // or the grid point and what lies there.
   const answered = view.screen === 'fact' ? view.question.question : undefined;
-  const factTarget = answered
+  const factItem = answered
     ? data?.itemById.get(answered.mode === 'hemisphere' ? answered.itemId : answered.promptId)
     : undefined;
+  const fact =
+    answered && data
+      ? answered.mode === 'coords'
+        ? { content: pointFactContent(answered, data), kind: 'line' as const }
+        : factItem
+          ? { content: factContent(factItem, data, answered), kind: factItem.kind }
+          : undefined
+      : undefined;
+  // The mode a finished round was played in, for "Še enkrat" and "Ponovi težje".
+  const roundMode = (round: Round): PlayMode => {
+    const first = round.questions[0]?.mode;
+    return first === 'fact' || first === 'coords' ? first : 'find';
+  };
 
   const status =
     dataState.status === 'loading'
@@ -131,7 +148,7 @@ export function App(): ReactElement {
           <SummaryScreen
             level={view.round.level}
             summary={view.summary}
-            onAgain={() => startLevel(view.round.level)}
+            onAgain={() => startLevel(view.round.level, roundMode(view.round))}
             onReplayWeak={() =>
               dispatch({
                 type: 'startRound',
@@ -141,8 +158,9 @@ export function App(): ReactElement {
                   view.summary.weakItemIds,
                   data,
                   rng,
-                  view.round.questions[0]?.mode === 'fact' ? 'fact' : 'find',
+                  roundMode(view.round),
                 ),
+                track: view.round.track,
               })
             }
             onHome={() => dispatch({ type: 'home' })}
@@ -161,10 +179,10 @@ export function App(): ReactElement {
                   factCard: (
                     <>
                       <Confetti />
-                      {factTarget && (
+                      {fact && (
                         <FactCard
-                          content={factContent(factTarget, data, answered)}
-                          kind={factTarget.kind}
+                          content={fact.content}
+                          kind={fact.kind}
                           praise={sl.correct[view.round.index % sl.correct.length] ?? sl.correct[0]}
                           onNext={() => dispatch({ type: 'next', items: data.itemById })}
                         />

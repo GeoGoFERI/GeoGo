@@ -31,6 +31,21 @@ describe('gameReducer', () => {
     expect(s2.progress.items['country-1']?.box).toBe(2);
   });
 
+  it('leaves progress alone for untracked rounds', () => {
+    const s = run([
+      {
+        type: 'startRound',
+        level: 2,
+        questions: buildFixedRound(items, ['country-0']),
+        track: false,
+      },
+      { type: 'click', id: 'country-0' },
+      { type: 'next', items: lookup },
+    ]);
+    expect(s.view.screen).toBe('summary');
+    expect(s.progress.roundsPlayed).toBe(0);
+  });
+
   it('ignores map clicks while the fact card is open', () => {
     const s = run([
       { type: 'startRound', level: 3, questions },

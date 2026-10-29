@@ -22,6 +22,7 @@ export type Round = {
   questions: readonly Question[];
   index: number;
   results: readonly QuestionResult[];
+  track: boolean;
 };
 
 export type View =
@@ -34,7 +35,7 @@ export type View =
 export type GameState = { view: View; progress: Progress };
 
 export type GameAction =
-  | { type: 'startRound'; level: LevelId; questions: readonly Question[] }
+  | { type: 'startRound'; level: LevelId; questions: readonly Question[]; track?: boolean }
   | { type: 'click'; id: string }
   | { type: 'help' }
   | { type: 'next'; items: ReadonlyMap<string, Item> }
@@ -54,6 +55,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         questions: action.questions,
         index: 0,
         results: [],
+        track: action.track ?? true,
       };
       return { ...state, view: { screen: 'play', round, question: startQuestion(first) } };
     }
@@ -77,7 +79,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       }
       const round = { ...view.round, index, results };
       return {
-        progress: recordRound(state.progress, results),
+        progress: round.track ? recordRound(state.progress, results) : state.progress,
         view: { screen: 'summary', round, summary: buildSummary(results, action.items) },
       };
     }

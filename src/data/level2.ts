@@ -1,4 +1,6 @@
-import { geoArea, geoCircle, geoGraticule10 } from 'd3-geo';
+import { geoArea, geoCircle, geoGraticule, geoGraticule10 } from 'd3-geo';
+import { GRID_STEP, gridPoints, pointId } from '../core/grid';
+import type { Annotation } from '../map/AnnotationLayer';
 import type { Feature, Geometry } from 'geojson';
 import type { Item } from '../core/item';
 import type { HemisphereFact, OrientationConfig } from '../core/orientation';
@@ -75,6 +77,15 @@ export interface Level2 {
   config: OrientationConfig;
   // Shapes for a question: the countries and grid as context plus one choice pair.
   shapesFor: (choiceIds: readonly string[] | undefined, context: readonly MapShape[]) => MapShape[];
+  // Shapes for "find the point": countries, the 30 degree grid and every grid point.
+  gridShapes: (context: readonly MapShape[]) => MapShape[];
+  // Degree labels for the grid; `words` turns a signed degree into "30° S" and similar.
+  gridAnnotations: (words: {
+    north: string;
+    south: string;
+    east: string;
+    west: string;
+  }) => Annotation[];
 }
 
 export function buildLevel2(countries: ReadonlyMap<string, Feature<Geometry>>): Level2 {
@@ -149,11 +160,89 @@ export function buildLevel2(countries: ReadonlyMap<string, Feature<Geometry>>): 
     return shapes;
   };
 
+  let gridCache: MapShape[] | undefined;
+  const gridShapes = (context: readonly MapShape[]): MapShape[] => {
+    if (gridCache) return gridCache;
+    const lines: MapShape = {
+      id: 'grid-30',
+      kind: 'line',
+      feature: {
+        type: 'Feature',
+        properties: {},
+        geometry: geoGraticule()
+          .step([GRID_STEP, GRID_STEP])
+          .extentMinor([
+            [-180, -80],
+            [180, 80],
+          ])(),
+      },
+      interactive: false,
+      tone: 'grid',
+    };
+    // The zero lines stand out, since every position is counted from them.
+    const zeroLines: MapShape[] = ['line-ekvator', 'line-zacetni-poldnevnik'].flatMap(
+      (id): MapShape[] => {
+        const feature = features.get(id);
+        return feature
+          ? [
+              {
+                id: `${id}-grid`,
+                kind: 'line',
+                feature,
+                interactive: false,
+                variant: 'wide',
+                tone: 'orange',
+              },
+            ]
+          : [];
+      },
+    );
+    const points: MapShape[] = gridPoints().map((p) => ({
+      id: pointId(p),
+      kind: 'point',
+      feature: {
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
+      },
+      interactive: true,
+    }));
+    gridCache = [...context, lines, ...zeroLines, ...points];
+    return gridCache;
+  };
+
+  const gridAnnotations = (words: {
+    north: string;
+    south: string;
+    east: string;
+    west: string;
+  }): Annotation[] => {
+    const out: Annotation[] = [];
+    // Distances from the equator just east of the prime meridian (the map's edges may be
+    // cropped on a tall screen); distances from the prime meridian near the top, every second
+    // line so the labels do not collide on a phone. Pupils count the lines in between.
+    for (let lat = -60; lat <= 60; lat += GRID_STEP) {
+      const text =
+        lat === 0 ? '0°' : `${String(Math.abs(lat))}° ${lat > 0 ? words.north : words.south}`;
+      out.push({ id: `lat${String(lat)}`, at: [GRID_STEP / 2, lat + 4], text });
+    }
+    for (let lon = -120; lon <= 180; lon += GRID_STEP * 2) {
+      const text =
+        lon === 0 || lon === 180
+          ? `${String(Math.abs(lon))}°`
+          : `${String(Math.abs(lon))}° ${lon > 0 ? words.east : words.west}`;
+      out.push({ id: `lon${String(lon)}`, at: [lon === 180 ? 172 : lon, 72], text });
+    }
+    return out;
+  };
+
   return {
     items,
     features,
     hemispheres,
     config: { items, choiceSets: CHOICE_SETS, hemispheres },
     shapesFor,
+    gridShapes,
+    gridAnnotations,
   };
 }

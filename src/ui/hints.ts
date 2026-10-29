@@ -1,8 +1,9 @@
 import type { Question } from '../core/round';
+import { gridPoints, parsePointId, pointId } from '../core/grid';
 import type { GameData } from '../data/gameData';
 import { sl } from '../i18n/sl';
 
-export type Tier2Hint = { text: string; highlightId?: string };
+export type Tier2Hint = { text: string; highlightId?: string; highlightIds?: string[] };
 
 const PAIR_HINTS: Record<string, string> = {
   'line-ekvator': sl.hintLines,
@@ -12,6 +13,15 @@ const PAIR_HINTS: Record<string, string> = {
 };
 
 export function tier2Hint(question: Question, data: GameData): Tier2Hint {
+  // Grid points: colour the row the point is on.
+  const point = parsePointId(question.promptId);
+  if (question.mode === 'coords' && point) {
+    const row = gridPoints()
+      .filter((p) => p.lat === point.lat)
+      .map(pointId);
+    return { text: sl.hintRow, highlightIds: row };
+  }
+
   const pairHint = question.choiceIds?.[0] ? PAIR_HINTS[question.choiceIds[0]] : undefined;
   if (pairHint) return { text: pairHint };
 

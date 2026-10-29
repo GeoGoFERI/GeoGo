@@ -4,7 +4,7 @@ import { shuffle, weightedSample, type Rng } from './random';
 
 export const ROUND_SIZE = 10;
 
-export type QuestionMode = 'find' | 'hemisphere' | 'fact';
+export type QuestionMode = 'find' | 'hemisphere' | 'fact' | 'coords';
 
 export type Question = {
   id: string;

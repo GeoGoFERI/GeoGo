@@ -8,6 +8,7 @@ import {
   type Question,
 } from '../core/round';
 import { riddlesFor } from './riddleContent';
+import { buildGridRound, gridReplay } from '../core/grid';
 import { buildOrientationRound } from '../core/orientation';
 import { seededRng, type Rng } from '../core/random';
 import type { GameData } from '../data/gameData';
@@ -17,7 +18,13 @@ export const makeRng = (hooks: TestHooks): Rng => {
   return seededRng(hooks.seed ?? Date.now());
 };
 
-export type PlayMode = 'find' | 'fact' | 'coast';
+export type PlayMode = 'find' | 'fact' | 'coast' | 'coords';
+
+export const modesFor = (level: LevelId): PlayMode[] => {
+  if (level === 3) return ['find', 'fact', 'coast'];
+  if (level === 2) return ['find', 'coords'];
+  return ['find'];
+};
 
 export function newRound(
   level: LevelId,
@@ -28,6 +35,10 @@ export function newRound(
   mode: PlayMode = 'find',
 ): Question[] {
   const pool = itemsInLevel(data.items, level);
+  if (level === 2 && mode === 'coords') {
+    const fixed = hooks.round?.flatMap((id) => gridReplay([id], rng));
+    return fixed ?? buildGridRound(rng);
+  }
   if (level === 3 && mode === 'fact') {
     // Only countries with an unambiguous riddle can be asked this way.
     const riddles = riddlesFor(data);
@@ -83,6 +94,7 @@ export const replayRound = (
   rng: Rng,
   mode: PlayMode = 'find',
 ): Question[] => {
+  if (mode === 'coords') return gridReplay(ids, rng);
   const items = ids.flatMap((id) => {
     const item = data.itemById.get(id);
     return item ? [item] : [];

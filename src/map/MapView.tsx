@@ -5,8 +5,6 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
-  type KeyboardEvent,
   type ReactElement,
   type Ref,
 } from 'react';
@@ -14,9 +12,10 @@ import { geoPath } from 'd3-geo';
 import { createProjection } from './projection';
 import { useSize } from './useSize';
 import { anchorOf } from './anchors';
-import { nearestAnchor, nextInDirection, type Direction } from './focusNav';
+import { useMapKeyboard } from './useMapKeyboard';
 import { hitTargets } from './hitAreas';
 import { HitLayer, applyHitSizes } from './HitLayer';
+import { AnnotationLayer, applyAnnotationSizes, type Annotation } from './AnnotationLayer';
 import { ShapeLayer } from './ShapeLayer';
 import { useZoom } from './useZoom';
 import { ZoomButtons } from './ZoomButtons';
@@ -42,6 +41,8 @@ export interface MapViewProps {
   labels: { map: string; zoomIn: string; zoomOut: string; reset: string };
   // Accessible name of one shape.
   shapeLabel: (id: string) => string;
+  // Text labels on the map (degree labels on the grid).
+  annotations?: readonly Annotation[];
   // The home view: fitted on mount, on resize, when it changes and by the reset button.
   region?: RegionId;
   ref?: Ref<MapHandle>;
@@ -55,13 +56,6 @@ export interface MapHandle {
   reset: () => void;
 }
 
-const ARROWS: Record<string, Direction> = {
-  ArrowUp: 'up',
-  ArrowDown: 'down',
-  ArrowLeft: 'left',
-  ArrowRight: 'right',
-};
-
 const NO_STATES: Readonly<Record<string, ShapeState>> = {};
 
 // The interactive SVG map.
@@ -72,14 +66,13 @@ export function MapView({
   labels,
   shapeLabel,
   region = 'world',
+  annotations,
   ref,
 }: MapViewProps): ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const layerRef = useRef<SVGGElement>(null);
   const { width, height } = useSize(containerRef);
-  // Roving focus: exactly one shape is in the tab order at a time.
-  const [activeId, setActiveId] = useState<string | undefined>(undefined);
 
   // Path strings, anchors and tap targets depend only on the shapes and the container size.
   const geometry = useMemo(() => {
@@ -97,13 +90,17 @@ export function MapView({
     return { sphere, drawn, anchors, targets: hitTargets(shapes, path), path, projection, bounds };
   }, [shapes, width, height]);
 
-  const onZoom = useCallback((t: ViewTransform): void => applyHitSizes(svgRef.current, t.k), []);
+  const onZoom = useCallback((t: ViewTransform): void => {
+    applyHitSizes(svgRef.current, t.k);
+    applyAnnotationSizes(svgRef.current, t.k);
+  }, []);
   const controls = useZoom(svgRef, layerRef, width, height, geometry.bounds, onZoom);
 
   // Newly rendered tap circles start at zoom-1 sizes; correct them for the current zoom.
   useLayoutEffect(() => {
     applyHitSizes(svgRef.current, controls.current().k);
-  }, [geometry, controls]);
+    applyAnnotationSizes(svgRef.current, controls.current().k);
+  }, [geometry, controls, annotations]);
 
   const handle = useMemo<MapHandle>(() => {
     const fitBox = (box: PixelBox, bottomInset = 0): void => {
@@ -149,53 +146,8 @@ export function MapView({
 
   const select = (id: string): void => onSelect?.(id);
 
-  const focusShape = (id: string | undefined): void => {
-    if (!id) return;
-    setActiveId(id);
-    const el = svgRef.current?.querySelector<SVGPathElement>(`[data-id="${CSS.escape(id)}"]`);
-    // preventScroll: the browser must not scroll the svg itself; panning is ours to do.
-    el?.focus({ preventScroll: true });
-    // Pan when keyboard focus lands on a shape outside the visible area.
-    const anchor = geometry.anchors.get(id);
-    if (!anchor) return;
-    const { k, x, y } = controls.current();
-    const sx = anchor[0] * k + x;
-    const sy = anchor[1] * k + y;
-    if (sx < 0 || sy < 0 || sx > width || sy > height) controls.centerOn(anchor);
-  };
-
-  // Entering the map by keyboard focuses the shape nearest the centre of the view.
-  const onSvgFocus = (): void => {
-    if (activeId && geometry.anchors.has(activeId)) {
-      focusShape(activeId);
-      return;
-    }
-    const { k, x, y } = controls.current();
-    focusShape(nearestAnchor(geometry.anchors, [(width / 2 - x) / k, (height / 2 - y) / k]));
-  };
-
-  const onKeyDown = (event: KeyboardEvent<SVGSVGElement>): void => {
-    if (event.key === '+' || event.key === '=') {
-      controls.zoomBy(1.6);
-      return;
-    }
-    if (event.key === '-') {
-      controls.zoomBy(1 / 1.6);
-      return;
-    }
-    const id = (event.target as Element).getAttribute('data-id');
-    if (!id) return;
-    const direction = ARROWS[event.key];
-    if (direction) {
-      event.preventDefault();
-      focusShape(nextInDirection(geometry.anchors, id, direction));
-    } else if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      select(id);
-    }
-  };
-
-  const hasActive = activeId !== undefined && geometry.anchors.has(activeId);
+  const keyboard = useMapKeyboard(svgRef, geometry.anchors, controls, { width, height }, select);
+  const { activeId, setActiveId } = keyboard;
 
   return (
     <div ref={containerRef} className="map">
@@ -206,11 +158,9 @@ export function MapView({
         height={height}
         role="group"
         aria-label={labels.map}
-        tabIndex={hasActive ? -1 : 0}
-        onFocus={(e) => {
-          if (e.target === e.currentTarget) onSvgFocus();
-        }}
-        onKeyDown={onKeyDown}
+        tabIndex={keyboard.svgTabIndex}
+        onFocus={keyboard.onFocus}
+        onKeyDown={keyboard.onKeyDown}
       >
         <g ref={layerRef} className="map__layer">
           <path className="map__sphere" d={geometry.sphere} />
@@ -222,6 +172,9 @@ export function MapView({
             onSelect={select}
             onFocusShape={setActiveId}
           />
+          {annotations && (
+            <AnnotationLayer annotations={annotations} projection={geometry.projection} />
+          )}
           <HitLayer
             targets={geometry.targets}
             states={states}

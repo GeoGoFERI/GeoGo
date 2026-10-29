@@ -319,3 +319,17 @@
 .shape--line.shape--tone-river {
   stroke-width: 4px;
 }
+
+/* Degree labels: navy text with a white halo so they read over land and sea. */
+.map-label {
+  fill: var(--geogo-navy);
+  font-family: var(--font-body);
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--geogo-paper);
+  stroke-width: 3px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}

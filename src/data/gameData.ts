@@ -8,7 +8,8 @@ import { computeGeoFacts, sortByName, type GeoFacts } from './geoFacts';
 import { placeFeatures } from './geometry';
 import { PLACES, PLACE_BY_GEO, PLACE_BY_ID, placeId } from './places';
 import { buildLevel1, type MarineData } from './level1';
-import { buildLevel2 } from './level2';
+import { buildLevel2, type Level2 } from './level2';
+import { geoContains } from 'd3-geo';
 import { buildLevel4, type NatureData } from './level4';
 import { FACTS } from './facts';
 import type { OrientationConfig } from '../core/orientation';
@@ -27,6 +28,8 @@ export type GameData = {
   choicesFor: (level: LevelId, itemId: string) => readonly string[] | undefined;
   nameOf: (id: string) => PlaceName | undefined;
   countryFact: (id: string) => CountryFact | undefined;
+  gridAnnotations: Level2['gridAnnotations'];
+  placeAt: (lonLat: [number, number]) => string | undefined;
   featureOf: (id: string) => Feature<Geometry> | undefined;
 };
 
@@ -84,6 +87,7 @@ export function buildGameData({ topology, marine, nature }: MapSources): GameDat
     countryShapes,
     shapesFor: (level, question) => {
       if (level === 1) return level1.shapes;
+      if (level === 2 && question?.mode === 'coords') return level2.gridShapes(contextCountries);
       if (level === 2) return level2.shapesFor(question?.choiceIds, contextCountries);
       if (level === 4) {
         const group = question ? level4.groupOf(question.itemId) : undefined;
@@ -92,6 +96,13 @@ export function buildGameData({ topology, marine, nature }: MapSources): GameDat
       return countryShapes;
     },
     orientation: level2.config,
+    gridAnnotations: level2.gridAnnotations,
+    placeAt: (lonLat) => {
+      for (const [id, f] of featureById) if (geoContains(f, lonLat)) return id;
+      for (const ocean of level1.oceanShapes)
+        if (geoContains(ocean.feature, lonLat)) return ocean.id;
+      return undefined;
+    },
     choicesFor: (level, itemId) => {
       if (level === 2) return level2.config.choiceSets.find((set) => set.includes(itemId));
       if (level === 4) {

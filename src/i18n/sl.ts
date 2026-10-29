@@ -63,7 +63,29 @@ export const sl = {
     find: 'Najdi državo',
     fact: 'Uganka',
     coast: 'Obmorska ali celinska?',
+    lines: 'Črte in poloble',
+    coords: 'Točke na mreži',
   },
+  findPoint: 'Najdi točko:',
+  point: 'Točka',
+  // position by distance from the equator (the curriculum does not require the term "geografska
+  // širina")
+  fromEquator: (lat: number): string =>
+    lat === 0
+      ? 'na ekvatorju'
+      : `${String(Math.abs(lat))}° ${lat > 0 ? 'severno' : 'južno'} od ekvatorja`,
+  // position by distance from the prime meridian (no "geografska dolžina")
+  fromMeridian: (lon: number): string =>
+    lon === 0
+      ? 'na začetnem poldnevniku'
+      : Math.abs(lon) === 180
+        ? '180° od začetnega poldnevnika'
+        : `${String(Math.abs(lon))}° ${lon > 0 ? 'vzhodno' : 'zahodno'} od začetnega poldnevnika`,
+  pointName: (equator: string, meridian: string): string => `točka ${equator}, ${meridian}`,
+  hintRow: 'Namig: točka je na označeni vodoravni črti.',
+  hereIs: 'Tukaj je',
+  hereIsSea: 'morje',
+  gridWords: { north: 'S', south: 'J', east: 'V', west: 'Z' },
   coastPrompt: 'Kam spada ta država?',
   cardOf: (n: number, total: number): string => `Karta ${String(n)} od ${String(total)}`,
   coastRight: 'Tako je!',
