@@ -15,6 +15,7 @@
   --map-hover: var(--geogo-yellow);
   --map-correct: var(--geogo-green);
   --map-wrong: var(--geogo-orange);
+  /* Mastered: a tint of green, lighter than the correct green. */
   --map-mastered: #cfe8bf;
 
   --font-body: 'Fredoka', system-ui, sans-serif;

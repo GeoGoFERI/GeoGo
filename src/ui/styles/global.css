@@ -68,7 +68,8 @@ h2 {
 }
 
 .btn:hover {
-  background: var(--geogo-ocean);
+  /* Navy on ocean is just under 4.5:1, so hover uses yellow (see contrast.test.ts). */
+  background: var(--geogo-yellow);
 }
 
 .btn--accent {

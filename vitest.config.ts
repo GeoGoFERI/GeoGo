@@ -5,5 +5,7 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',
+    // The contrast test reads the colour tokens with `?raw`; other CSS stays stubbed.
+    css: { include: [/tokens\.css/] },
   },
 });
