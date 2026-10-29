@@ -3,11 +3,13 @@ import type { LevelId } from '../core/item';
 import type { RoundSummary } from '../core/summary';
 import { sl } from '../i18n/sl';
 import { StarIcon } from './icons';
+import { Sticker } from './Sticker';
 import './styles/summary.css';
 
 export type SummaryScreenProps = {
   level: LevelId;
   summary: RoundSummary;
+  newStickers?: readonly LevelId[];
   onAgain: () => void;
   onReplayWeak: () => void;
   onHome: () => void;
@@ -18,6 +20,7 @@ const ROW = 5;
 export function SummaryScreen({
   level,
   summary,
+  newStickers = [],
   onAgain,
   onReplayWeak,
   onHome,
@@ -49,6 +52,12 @@ export function SummaryScreen({
         {sl.headlines[level][summary.headline]}
       </p>
       {groups && <p className="summary__practice">{sl.practice(groups)}</p>}
+      {newStickers.map((l) => (
+        <div key={l} className="summary__sticker" role="status">
+          <Sticker level={l} earned />
+          <span>{sl.stickerNew(sl.levels[l])}</span>
+        </div>
+      ))}
       <div className="summary__actions">
         <button type="button" className="btn btn--accent btn--big" onClick={onAgain}>
           {sl.again}

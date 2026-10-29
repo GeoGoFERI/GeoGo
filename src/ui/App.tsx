@@ -148,6 +148,7 @@ export function App(): ReactElement {
           <SummaryScreen
             level={view.round.level}
             summary={view.summary}
+            newStickers={view.newStickers}
             onAgain={() => startLevel(view.round.level, roundMode(view.round))}
             onReplayWeak={() =>
               dispatch({

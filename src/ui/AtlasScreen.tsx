@@ -7,6 +7,7 @@ import { MapView } from '../map/MapView';
 import type { MapShape, ShapeState } from '../map/types';
 import { sl } from '../i18n/sl';
 import { CheckIcon } from './icons';
+import { Sticker } from './Sticker';
 import { levelItems } from './newRound';
 import './styles/atlas.css';
 
@@ -58,6 +59,14 @@ export const AtlasScreen = ({
           {counts.map((c) => (
             <li key={c.level} data-testid={`atlas-count-${String(c.level)}`}>
               {sl.atlasCount(sl.levels[c.level], c.mastered, c.total)}
+            </li>
+          ))}
+        </ul>
+        <h2 className="visually-hidden">{sl.stickersTitle}</h2>
+        <ul className="stickers" aria-label={sl.stickersTitle}>
+          {counts.map((c) => (
+            <li key={c.level}>
+              <Sticker level={c.level} earned={progress.stickers.includes(c.level)} />
             </li>
           ))}
         </ul>

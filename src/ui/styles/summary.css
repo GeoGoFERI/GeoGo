@@ -44,3 +44,14 @@
   gap: 12px;
   margin-top: 8px;
 }
+
+.summary__sticker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border: var(--border);
+  border-radius: var(--radius-card);
+  background: var(--geogo-green);
+  font-weight: 700;
+}

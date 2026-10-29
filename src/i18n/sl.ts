@@ -200,6 +200,9 @@ export const sl = {
     river: 'Reke',
   } as Record<string, string>,
 
+  stickersTitle: 'Moje nalepke',
+  stickerNew: (level: string): string => `Nova nalepka: ${level}!`,
+  stickerLocked: (level: string): string => `${level}: še zbiraš`,
   atlasTitle: 'Moj atlas',
   atlasIntro: 'Kar že znaš, je na zemljevidu zeleno.',
   atlasCount: (level: string, mastered: number, total: number): string =>

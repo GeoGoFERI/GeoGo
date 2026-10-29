@@ -29,6 +29,30 @@ describe('gameReducer', () => {
     expect(s2.progress.roundsPlayed).toBe(1);
     expect(s2.progress.items['country-0']?.box).toBe(1);
     expect(s2.progress.items['country-1']?.box).toBe(2);
+    expect(s2.view.newStickers).toEqual([]);
+  });
+
+  it('awards a sticker when the last item of a level becomes mastered', () => {
+    const one = makeItems(1);
+    const items1 = new Map(one.map((i) => [i.id, i]));
+    const q = buildFixedRound(one, ['country-0']);
+    let s: GameState = {
+      view: { screen: 'start' },
+      progress: {
+        ...emptyProgress(),
+        items: { 'country-0': { box: 2, seen: 1, firstTry: 1, lastRound: 0 } },
+      },
+    };
+    for (const a of [
+      { type: 'startRound', level: 3, questions: q },
+      { type: 'click', id: 'country-0' },
+      { type: 'next', items: items1 },
+    ] as GameAction[]) {
+      s = gameReducer(s, a);
+    }
+    if (s.view.screen !== 'summary') throw new Error('expected summary');
+    expect(s.view.newStickers).toEqual([3]);
+    expect(s.progress.stickers).toEqual([3]);
   });
 
   it('leaves progress alone for untracked rounds', () => {

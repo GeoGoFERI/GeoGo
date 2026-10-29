@@ -9,6 +9,7 @@ import {
 } from '../core/question';
 import type { Question } from '../core/round';
 import { buildSummary, type RoundSummary } from '../core/summary';
+import { awardStickers } from '../core/stickers';
 import {
   coastReducer,
   startCoastGame,
@@ -29,7 +30,7 @@ export type View =
   | { screen: 'start' }
   | { screen: 'atlas' }
   | { screen: 'play' | 'fact'; round: Round; question: QuestionState }
-  | { screen: 'summary'; round: Round; summary: RoundSummary }
+  | { screen: 'summary'; round: Round; summary: RoundSummary; newStickers: readonly LevelId[] }
   | { screen: 'coast'; game: CoastGameState };
 
 export type GameState = { view: View; progress: Progress };
@@ -78,9 +79,16 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         return { ...state, view: { screen: 'play', round, question: startQuestion(nextQuestion) } };
       }
       const round = { ...view.round, index, results };
+      const recorded = round.track ? recordRound(state.progress, results) : state.progress;
+      const { progress, added } = awardStickers(recorded, [...action.items.values()]);
       return {
-        progress: round.track ? recordRound(state.progress, results) : state.progress,
-        view: { screen: 'summary', round, summary: buildSummary(results, action.items) },
+        progress,
+        view: {
+          screen: 'summary',
+          round,
+          summary: buildSummary(results, action.items),
+          newStickers: added,
+        },
       };
     }
     case 'startCoast':

@@ -55,3 +55,51 @@
   left: 10px;
   bottom: 10px;
 }
+
+.stickers {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.sticker {
+  margin: 0;
+  width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-label);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.sticker__badge {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 3px dashed var(--geogo-navy);
+  background: var(--geogo-paper);
+  opacity: 0.6;
+}
+
+/* Earned: solid border, yellow fill and a star, so it is not told by colour alone. */
+.sticker--earned .sticker__badge {
+  border-style: solid;
+  background: var(--geogo-yellow);
+  box-shadow: var(--shadow-hard);
+  opacity: 1;
+}
+
+.sticker__star {
+  position: absolute;
+  right: -6px;
+  top: -6px;
+}
