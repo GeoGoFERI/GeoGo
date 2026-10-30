@@ -3,13 +3,16 @@ import { settle, tapShape } from './helpers';
 
 test.use({ viewport: { width: 360, height: 640 }, hasTouch: true });
 
-// no sideways scrolling, and every visible button is at least 44 px in both directions
-const checkScreen = async (page: Page, where: string): Promise<void> => {
-  const overflow = await page.evaluate(
+// horizontal overflow in pixels (0 when the page fits)
+async function overflow(page: Page): Promise<number> {
+  return page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
-  expect(overflow, `${where}: horizontal overflow`).toBeLessThanOrEqual(0);
-  const small = await page.evaluate(() =>
+}
+
+// visible buttons smaller than 44 px in either direction, as readable strings
+const smallTargets = async (page: Page): Promise<string[]> => {
+  return page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('button')]
       .filter((b) => b.offsetParent !== null)
       .map((b) => ({
@@ -21,7 +24,16 @@ const checkScreen = async (page: Page, where: string): Promise<void> => {
         ({ text, r }) => `${text} ${String(Math.round(r.width))}x${String(Math.round(r.height))}`,
       ),
   );
-  expect(small, `${where}: small touch targets`).toEqual([]);
+};
+
+// no sideways scrolling, and every visible button is at least 44 px in both directions
+const checkScreen = async (page: Page, where: string): Promise<void> => {
+  await expect
+    .poll(() => overflow(page), { message: `${where}: horizontal overflow` })
+    .toBeLessThanOrEqual(0);
+  await expect
+    .poll(() => smallTargets(page), { message: `${where}: small touch targets` })
+    .toEqual([]);
 };
 
 test('phone: every screen fits the width and has big enough buttons', async ({ page }) => {
