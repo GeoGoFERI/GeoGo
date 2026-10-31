@@ -159,3 +159,24 @@ function buildOutline(
     geometry: { type: 'MultiLineString', coordinates: lines },
   };
 }
+
+// merges the country parts that pass `keep` into one feature with topojson `merge`, so inner
+// borders disappear
+export const mergeCountryParts = (
+  topology: WorldTopology,
+  keep: (a2: string, centroid: [number, number]) => boolean,
+): Feature<Geometry> | undefined => {
+  const geometries = countryGeometries(topology);
+  const polygons: Polygon[] = [];
+  for (const row of PLACES) {
+    for (const part of explode(
+      row.a2,
+      partsOf(row.geo).flatMap((k) => geometries.get(k) ?? []),
+    )) {
+      const centroid = geoCentroid(objectFeature(topology, part.polygon)) as [number, number];
+      if (keep(row.a2, centroid)) polygons.push(part.polygon);
+    }
+  }
+  if (polygons.length === 0) return undefined;
+  return { type: 'Feature', properties: {}, geometry: merge(topology, polygons) };
+};

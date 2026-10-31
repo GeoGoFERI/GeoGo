@@ -46,6 +46,9 @@ export function PlayScreen({
   const hint = useMemo(() => tier2Hint(q, data), [q, data]);
   const prompt = useMemo(() => promptFor(q, data), [q, data]);
   const shapes = data.shapesFor(level, q);
+  // Level 5 spans the world, so each question opens on its target's continent.
+  const homeRegion =
+    level === 5 ? (data.itemById.get(q.itemId)?.region ?? 'world') : levelById(level).region;
   const voice = useSlovenianVoice();
   const riddle = q.mode === 'fact' ? riddlesFor(data).get(q.promptId) : undefined;
   const readAloud = voice && riddle ? (): void => speak(riddleText(riddle), voice) : undefined;
@@ -70,8 +73,8 @@ export function PlayScreen({
 
   // Each new question starts from the level's home view.
   useEffect(() => {
-    mapRef.current?.fitToRegion(levelById(level).region);
-  }, [q.id, level]);
+    mapRef.current?.fitToRegion(homeRegion);
+  }, [q.id, homeRegion]);
 
   const states = useMemo(() => {
     const s: Record<string, ShapeState> = {};
@@ -118,7 +121,7 @@ export function PlayScreen({
           onSelect={onSelect}
           labels={sl.mapLabels}
           shapeLabel={shapeLabel}
-          region={levelById(level).region}
+          region={homeRegion}
           {...(q.mode === 'coords' ? { annotations: data.gridAnnotations(sl.gridWords) } : {})}
         />
         <div className="play__toasts">{toast}</div>

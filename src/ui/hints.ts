@@ -40,5 +40,7 @@ export function tier2Hint(question: Question, data: GameData): Tier2Hint {
     const group = item.group ? sl.groups[item.group] : undefined;
     return { text: group ? sl.hintGroup(group) : sl.hintZoom };
   }
-  return { text: sl.itemHints[item.id] ?? sl.hintZoom };
+  const continent = sl.regionNames[item.region];
+  const fallback = item.levels.includes(5) && continent ? sl.hintRegion(continent) : sl.hintZoom;
+  return { text: sl.itemHints[item.id] ?? fallback };
 }

@@ -33,6 +33,13 @@ export const itemKindSchema = z.enum([
   'line',
   'hemisphere',
   'pole',
+  // Level 5 adds these kinds of natural units.
+  'plateau',
+  'desert',
+  'lake',
+  'gulf',
+  'region',
+  'reef',
 ]);
 export type ItemKind = z.infer<typeof itemKindSchema>;
 

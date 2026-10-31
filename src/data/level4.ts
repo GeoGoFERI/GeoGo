@@ -3,6 +3,7 @@ import type { Feature, Geometry, MultiLineString, MultiPolygon, Polygon } from '
 import type { Item } from '../core/item';
 import type { MapShape } from '../map/types';
 import { HAND_DRAWN } from './custom/europeNature';
+import { rewound } from './rewind';
 
 // Level 4 geometry built by scripts/build-europe-nature.mjs from Natural Earth
 export type NatureData = Readonly<Record<string, MultiPolygon | MultiLineString>>;
@@ -77,18 +78,6 @@ const ROWS: readonly Row[] = [
 
 // ocean items shared with Level 1; they join the water family here
 const SHARED_OCEANS = ['ocean-atlantski', 'ocean-arkticni'];
-
-// d3-geo wants clockwise exterior rings; flip polygons that would cover the rest of the globe
-const rewound = (geometry: MultiPolygon): MultiPolygon => {
-  return {
-    type: 'MultiPolygon',
-    coordinates: geometry.coordinates.map((polygon) =>
-      geoArea({ type: 'Polygon', coordinates: polygon }) > 2 * Math.PI
-        ? polygon.map((ring) => [...ring].reverse())
-        : polygon,
-    ),
-  };
-};
 
 // the part of a multipolygon that contains a point, or the largest part
 const partOf = (

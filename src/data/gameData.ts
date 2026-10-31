@@ -12,6 +12,7 @@ import { buildLevel2, type Level2 } from './level2';
 import { geoContains } from 'd3-geo';
 import { buildLevel4, type NatureData } from './level4';
 import { FACTS } from './facts';
+import { buildLevel5, type WorldNatureData } from './level5';
 import type { OrientationConfig } from '../core/orientation';
 import type { Question } from '../core/round';
 
@@ -33,9 +34,14 @@ export type GameData = {
   featureOf: (id: string) => Feature<Geometry> | undefined;
 };
 
-export type MapSources = { topology: WorldTopology; marine: MarineData; nature: NatureData };
+export type MapSources = {
+  topology: WorldTopology;
+  marine: MarineData;
+  nature: NatureData;
+  world: WorldNatureData;
+};
 
-export function buildGameData({ topology, marine, nature }: MapSources): GameData {
+export function buildGameData({ topology, marine, nature, world }: MapSources): GameData {
   const features = placeFeatures(topology);
   const facts: ReadonlyMap<string, GeoFacts> = computeGeoFacts(topology);
   const level1 = buildLevel1(topology, marine);
@@ -73,6 +79,18 @@ export function buildGameData({ topology, marine, nature }: MapSources): GameDat
   items.push(...level4.items);
   for (const item of level4.items) itemById.set(item.id, item);
 
+  const level5 = buildLevel5(topology, world);
+  items.push(...level5.items);
+  for (const item of level5.items) itemById.set(item.id, item);
+  // Sredozemsko morje is listed both under Evropa (Level 4) and Afrika (Level 5).
+  const med = itemById.get('sea-sredozemsko');
+  if (med) {
+    const shared = { ...med, levels: [4, 5] as Item['levels'] };
+    items[items.indexOf(med)] = shared;
+    itemById.set(med.id, shared);
+  }
+  const seas = new Map([...level4.features].filter(([id]) => id.startsWith('sea-')));
+
   for (const [index, item] of items.entries()) {
     const fact = FACTS[item.id];
     if (!fact) continue;
@@ -93,6 +111,7 @@ export function buildGameData({ topology, marine, nature }: MapSources): GameDat
         const group = question ? level4.groupOf(question.itemId) : undefined;
         return level4.shapesFor(group, contextCountries, level1.oceanShapes);
       }
+      if (level === 5) return level5.shapesFor(question?.itemId, contextCountries, seas);
       return countryShapes;
     },
     orientation: level2.config,
@@ -109,6 +128,7 @@ export function buildGameData({ topology, marine, nature }: MapSources): GameDat
         const group = level4.groupOf(itemId);
         return group ? level4.membersOf(group) : undefined;
       }
+      if (level === 5) return level5.choicesFor(itemId);
       return undefined;
     },
     nameOf: (id) => {
@@ -131,7 +151,8 @@ export function buildGameData({ topology, marine, nature }: MapSources): GameDat
       featureById.get(id) ??
       level1.features.get(id) ??
       level2.features.get(id) ??
-      level4.features.get(id),
+      level4.features.get(id) ??
+      level5.features.get(id),
   };
 }
 
@@ -142,11 +163,13 @@ export const loadGameData = (): Promise<GameData> => {
     loadWorld50(),
     import('./generated/marine.json'),
     import('./generated/europe-nature.json'),
-  ]).then(([topology, marine, nature]) =>
+    import('./generated/world-nature.json'),
+  ]).then(([topology, marine, nature, world]) =>
     buildGameData({
       topology,
       marine: marine.default as MarineData,
       nature: nature.default as unknown as NatureData,
+      world: world.default as unknown as WorldNatureData,
     }),
   );
   return cached;

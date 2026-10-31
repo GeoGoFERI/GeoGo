@@ -48,6 +48,14 @@ export const sl = {
   hintNeighbour: (name: string): string => `Sosednja država: ${name}`,
   hintGroup: (group: string): string => `Leži v tem delu Evrope: ${group}`,
   hintFlash: 'Tukaj je! Klikni utripajoče območje.',
+  hintRegion: (name: string): string => `Namig: išči na tem delu sveta: ${name}.`,
+  regionNames: {
+    asia: 'Azija',
+    africa: 'Afrika',
+    namerica: 'Severna Amerika',
+    samerica: 'Južna Amerika',
+    oceania: 'Avstralija in Oceanija',
+  } as Record<string, string>,
   flagOf: (name: string): string => `Zastava: ${name}`,
   hemisphereAsk: (plural: boolean): string => `V kateri polobli ${plural ? 'ležijo' : 'leži'}`,
   hemisphereDetail: {
@@ -198,6 +206,11 @@ export const sl = {
     land: 'Polotoki, otoki in nižine',
     mountain: 'Gorstva',
     river: 'Reke',
+    asia: 'Azija',
+    africa: 'Afrika',
+    namerica: 'Severna Amerika',
+    samerica: 'Južna Amerika',
+    oceania: 'Avstralija z Oceanijo',
   } as Record<string, string>,
 
   stickersTitle: 'Moje nalepke',
