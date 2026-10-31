@@ -333,3 +333,17 @@
   text-anchor: middle;
   dominant-baseline: middle;
 }
+
+/* "Moj atlas": mastered seas, ranges, rivers and lines turn green like countries. */
+.shape--water.shape--mastered,
+.shape--area.shape--tone-land.shape--mastered,
+.shape--area.shape--tone-lowland.shape--mastered,
+.shape--area.shape--tone-mountain.shape--mastered {
+  fill: var(--map-mastered);
+  fill-opacity: 1;
+}
+
+.shape--line.shape--mastered {
+  stroke: var(--map-correct);
+  stroke-width: 5px;
+}

@@ -15,20 +15,53 @@ export interface AtlasScreenProps {
   data: GameData;
   progress: Progress;
   onBack: () => void;
-  // extra layers (rivers, mountains...) drawn over the countries
-  extraShapes?: readonly MapShape[];
 }
 
+// mastered items that are not countries, as map layers: seas and oceans under the countries,
+// rivers, ranges, peninsulas, islands, lowlands and the equator and prime meridian on top
+const masteredLayers = (
+  data: GameData,
+  progress: Progress,
+): { under: MapShape[]; over: MapShape[] } => {
+  const under: MapShape[] = [];
+  const over: MapShape[] = [];
+  for (const item of data.items) {
+    if (!isMastered(progress.items[item.id])) continue;
+    if (['country', 'continent', 'hemisphere', 'pole'].includes(item.kind)) continue;
+    const feature = data.featureOf(item.id);
+    if (!feature) continue;
+    if (item.kind === 'ocean' || item.kind === 'sea') {
+      under.push({ id: item.id, kind: 'area', feature, interactive: true, variant: 'water' });
+    } else if (item.kind === 'river' || item.kind === 'line') {
+      over.push({
+        id: item.id,
+        kind: 'line',
+        feature,
+        interactive: true,
+        variant: 'wide',
+        tone: item.kind === 'river' ? 'river' : 'orange',
+      });
+    } else {
+      over.push({
+        id: item.id,
+        kind: 'area',
+        feature,
+        interactive: true,
+        tone: item.kind === 'mountain' ? 'mountain' : 'land',
+      });
+    }
+  }
+  return { under, over };
+};
+
 // "Moj atlas": everything already mastered is green, so the world fills in over time
-export const AtlasScreen = ({
-  data,
-  progress,
-  onBack,
-  extraShapes = [],
-}: AtlasScreenProps): ReactElement => {
+export const AtlasScreen = ({ data, progress, onBack }: AtlasScreenProps): ReactElement => {
   const [picked, setPicked] = useState<string | undefined>(undefined);
 
-  const shapes = useMemo(() => [...data.countryShapes, ...extraShapes], [data, extraShapes]);
+  const shapes = useMemo(() => {
+    const { under, over } = masteredLayers(data, progress);
+    return [...under, ...data.countryShapes, ...over];
+  }, [data, progress]);
   const states = useMemo(() => {
     const s: Record<string, ShapeState> = {};
     for (const [id, stats] of Object.entries(progress.items))
@@ -55,21 +88,6 @@ export const AtlasScreen = ({
       <div className="atlas__head">
         <h1>{sl.atlasTitle}</h1>
         <p>{sl.atlasIntro}</p>
-        <ul className="atlas__counts">
-          {counts.map((c) => (
-            <li key={c.level} data-testid={`atlas-count-${String(c.level)}`}>
-              {sl.atlasCount(sl.levels[c.level], c.mastered, c.total)}
-            </li>
-          ))}
-        </ul>
-        <h2 className="visually-hidden">{sl.stickersTitle}</h2>
-        <ul className="stickers" aria-label={sl.stickersTitle}>
-          {counts.map((c) => (
-            <li key={c.level}>
-              <Sticker level={c.level} earned={progress.stickers.includes(c.level)} />
-            </li>
-          ))}
-        </ul>
       </div>
       <div className="atlas__map">
         <MapView
@@ -89,6 +107,23 @@ export const AtlasScreen = ({
         <button type="button" className="btn btn--plain atlas__back" onClick={onBack}>
           {sl.back}
         </button>
+      </div>
+      <div className="atlas__stickers">
+        <h2>{sl.stickersTitle}</h2>
+        <ul className="atlas__counts">
+          {counts.map((c) => (
+            <li key={c.level} data-testid={`atlas-count-${String(c.level)}`}>
+              {sl.atlasCount(sl.levels[c.level], c.mastered, c.total)}
+            </li>
+          ))}
+        </ul>
+        <ul className="stickers" aria-label={sl.stickersTitle}>
+          {counts.map((c) => (
+            <li key={c.level}>
+              <Sticker level={c.level} earned={progress.stickers.includes(c.level)} />
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
