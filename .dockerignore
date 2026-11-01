@@ -1,0 +1,16 @@
+# Only the sources the build needs go into the build context.
+node_modules
+dist
+dev-dist
+.git
+.downloads
+test-results
+playwright-report
+blob-report
+coverage
+docs/screenshots
+*.log
+.env
+.env.*
+Dockerfile
+.dockerignore
