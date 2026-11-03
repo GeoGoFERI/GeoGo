@@ -35,7 +35,7 @@ export default defineConfig({
       },
       workbox: {
         // Everything the game needs is bundled, so precaching the build makes it fully offline.
-        globPatterns: ['**/*.{js,css,html,webp,png,woff2,json}'],
+        globPatterns: ['**/*.{js,css,html,webp,png,svg,woff2,json}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallback: 'index.html',
       },
