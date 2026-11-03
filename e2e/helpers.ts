@@ -17,20 +17,28 @@ export async function pointInShape(page: Page, id: string): Promise<{ x: number;
     const inverse = ctm.inverse();
     const cx = (left + right) / 2;
     const cy = (top + bottom) / 2;
-    let best: { x: number; y: number; d: number } | null = null;
+    // Grid points inside the shape, nearest the middle first. The cheap fill test runs on all of
+    // them; the slow hit test (elementFromPoint) only until a good point is found.
+    const inFill: { x: number; y: number; d: number }[] = [];
     const steps = 40;
     for (let i = 0; i <= steps; i += 1) {
       for (let j = 0; j <= steps; j += 1) {
-        const sx = left + ((right - left) * i) / steps;
-        const sy = top + ((bottom - top) * j) / steps;
+        // Whole pixels: a browser may round a fractional click onto the neighbour.
+        const sx = Math.round(left + ((right - left) * i) / steps);
+        const sy = Math.round(top + ((bottom - top) * j) / steps);
         const lx = inverse.a * sx + inverse.c * sy + inverse.e;
         const ly = inverse.b * sx + inverse.d * sy + inverse.f;
-        if (!path.isPointInFill(new DOMPoint(lx, ly))) continue;
-        if (document.elementFromPoint(sx, sy) !== path) continue;
-        const d = (sx - cx) ** 2 + (sy - cy) ** 2;
-        if (!best || d < best.d) best = { x: sx, y: sy, d };
+        if (path.isPointInFill(new DOMPoint(lx, ly)))
+          inFill.push({ x: sx, y: sy, d: (sx - cx) ** 2 + (sy - cy) ** 2 });
       }
     }
+    inFill.sort((a, b) => a.d - b.d);
+    const on = (x: number, y: number): boolean => document.elementFromPoint(x, y) === path;
+    // Prefer a point with the shape 2 px around it: on a border Firefox clicked the neighbour
+    // (Austria from Slovenia's edge).
+    const inside = (p: { x: number; y: number }): boolean =>
+      on(p.x, p.y) && on(p.x + 2, p.y) && on(p.x - 2, p.y) && on(p.x, p.y + 2) && on(p.x, p.y - 2);
+    const best = inFill.find(inside) ?? inFill.find((p) => on(p.x, p.y));
     return best ? { x: best.x, y: best.y } : null;
   }, id);
   if (!point) throw new Error(`No clickable point for ${id}`);

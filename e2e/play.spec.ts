@@ -49,7 +49,9 @@ test('a tiny country can be tapped near it thanks to its circular hit area', asy
   const box = await hit.boundingBox();
   if (!box) throw new Error('no hit circle');
   expect(box.width).toBeGreaterThanOrEqual(43);
-  await page.mouse.click(box.x + box.width / 2 + 10, box.y + box.height / 2);
+  // A near miss just beside the dot still counts. Further out, the country under the finger
+  // wins, so Luxembourg does not take taps meant for Belgium (see INNER_RADIUS_PX).
+  await page.mouse.click(box.x + box.width / 2 + 6, box.y + box.height / 2);
   await expect(page.getByRole('dialog')).toContainText('Luksemburg');
 });
 

@@ -5,10 +5,11 @@ import type { MapShape } from './types';
 
 // Radius of the invisible tap target, in screen pixels.
 export const HIT_RADIUS_PX = 22;
-// Within this many screen pixels of its centre a tiny place always wins over a neighbour.
-export const INNER_RADIUS_PX = 12;
 // Radius of the visible dot that marks a tiny place, in screen pixels.
 export const DOT_RADIUS_PX = 6;
+// A tap on the visible dot (plus 2 px of slack) always picks the tiny place; further out, a real
+// outline under the finger wins, so a microstate's tap circle cannot steal taps from its neighbour.
+export const INNER_RADIUS_PX = DOT_RADIUS_PX + 2;
 // Shapes smaller than this many degrees across count as tiny (microstates, small islands).
 const TINY_DEGREES = 1.5;
 

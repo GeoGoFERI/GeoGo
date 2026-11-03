@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { geoPath } from 'd3-geo';
 import { createProjection } from './projection';
-import { HIT_RADIUS_PX, hitSizes, hitTargets } from './hitAreas';
+import { DOT_RADIUS_PX, HIT_RADIUS_PX, INNER_RADIUS_PX, hitSizes, hitTargets } from './hitAreas';
 import type { MapShape } from './types';
 
 const square = (id: string, lon: number, lat: number, size: number): MapShape => ({
@@ -61,5 +61,13 @@ describe('hitSizes', () => {
   it('drops the circle when the shape is big enough on screen', () => {
     expect(hitSizes(2, 1).showHit).toBe(true);
     expect(hitSizes(2, 30).showHit).toBe(false);
+  });
+});
+
+describe('INNER_RADIUS_PX', () => {
+  // A wide inner radius let Luxembourg take taps on Belgium, and Liechtenstein on Switzerland.
+  it('only claims taps on or right next to a tiny place’s dot', () => {
+    expect(INNER_RADIUS_PX).toBeGreaterThanOrEqual(DOT_RADIUS_PX);
+    expect(INNER_RADIUS_PX).toBeLessThanOrEqual(DOT_RADIUS_PX + 2);
   });
 });
