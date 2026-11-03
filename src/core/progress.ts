@@ -69,10 +69,15 @@ export function saveProgress(store: KeyValueStore, progress: Progress): void {
   store.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
+// An item can be the answer to several questions in one round (Level 2 hemispheres).
+// It moves at most one box per round, by its worst result in that round.
 export function recordRound(progress: Progress, results: readonly QuestionResult[]): Progress {
   const round = progress.roundsPlayed + 1;
+  const worst = new Map<string, QuestionResult['stars']>();
+  for (const r of results)
+    worst.set(r.itemId, Math.min(worst.get(r.itemId) ?? 3, r.stars) as QuestionResult['stars']);
   const items: Record<string, ItemStats> = { ...progress.items };
-  for (const r of results) items[r.itemId] = updateStats(items[r.itemId], r.stars, round);
+  for (const [id, stars] of worst) items[id] = updateStats(items[id], stars, round);
   return { ...progress, roundsPlayed: round, items };
 }
 

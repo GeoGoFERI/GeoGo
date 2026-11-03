@@ -30,6 +30,13 @@ describe('recordRound', () => {
     expect(after.items.b?.box).toBe(1);
     expect(before.items).toEqual({});
   });
+
+  it('moves an item that is asked several times at most one box, by its worst result', () => {
+    const once = recordRound(emptyProgress(), [result('a', 3), result('a', 3), result('a', 3)]);
+    expect(once.items.a?.box).toBe(2);
+    const mixed = recordRound(once, [result('a', 3), result('a', 1)]);
+    expect(mixed.items.a?.box).toBe(1);
+  });
 });
 
 describe('persistence', () => {
