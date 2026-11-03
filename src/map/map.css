@@ -209,7 +209,7 @@
 
 @media (hover: hover) {
   .shape--line.shape--interactive:hover,
-  g:hover > .shape--line.shape--interactive {
+  .shape--line.shape--interactive.shape--hover {
     stroke: var(--map-hover);
     fill: none;
   }

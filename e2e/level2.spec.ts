@@ -37,3 +37,36 @@ test('Level 2: the equator, a hemisphere question and a pole', async ({ page }) 
   await page.mouse.click(pole.x + pole.width / 2, pole.y + pole.height / 2);
   await expect(page.getByRole('dialog')).toContainText('severni pol');
 });
+
+test('Level 2: both poles can be tapped from the home view', async ({ page }) => {
+  await page.goto('/?round=pole-juzni,pole-severni');
+  await page.getByRole('button', { name: /Orientacija/ }).click();
+  await page.getByRole('button', { name: 'Začni' }).click();
+  for (const id of ['pole-juzni', 'pole-severni']) {
+    await page.waitForTimeout(600);
+    const map = await page.locator('svg.map__svg').boundingBox();
+    const dot = await page.locator(`circle.hit-dot--point[data-id="${id}"]`).boundingBox();
+    if (!map || !dot) throw new Error(`no ${id}`);
+    expect(dot.y).toBeGreaterThanOrEqual(map.y);
+    expect(dot.y + dot.height).toBeLessThanOrEqual(map.y + map.height);
+    await page.mouse.click(dot.x + dot.width / 2, dot.y + dot.height / 2);
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByRole('button', { name: 'Naprej' }).click();
+  }
+});
+
+test('Level 2 grid: the edge points are inside the map', async ({ page }) => {
+  await page.goto('/?round=pt:0:-150,pt:0:150,pt:0:180');
+  await page.getByRole('button', { name: /Orientacija/ }).click();
+  await page.getByRole('button', { name: 'Točke na mreži', exact: true }).click();
+  await page.getByRole('button', { name: 'Začni' }).click();
+  await page.waitForTimeout(600);
+  const map = await page.locator('svg.map__svg').boundingBox();
+  for (const id of ['pt:0:-150', 'pt:0:150', 'pt:0:180']) {
+    const p = await page.locator(`[data-id="${id}"]`).first().boundingBox();
+    if (!map || !p) throw new Error(`no ${id}`);
+    const cx = p.x + p.width / 2;
+    expect(cx).toBeGreaterThan(map.x);
+    expect(cx).toBeLessThan(map.x + map.width);
+  }
+});

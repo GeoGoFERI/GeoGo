@@ -24,3 +24,20 @@ test('Level 5: a river in Africa and Eurasia', async ({ page }) => {
   await tapShape(page, 'peninsula-arabski');
   await expect(page.getByRole('dialog')).toContainText('Arabski polotok');
 });
+
+test('Level 5: the Tigris does not take taps on the Euphrates', async ({ page }) => {
+  await page.goto('/?round=river-evfrat');
+  await page.getByRole('button', { name: /Celine sveta/ }).click();
+  await page.getByRole('button', { name: 'Začni' }).click();
+  await page.waitForTimeout(600);
+  const at = await page.evaluate(() => {
+    const el = document.querySelector<SVGPathElement>('path[data-id="river-evfrat"]');
+    const ctm = el?.getScreenCTM();
+    if (!el || !ctm) return null;
+    const q = el.getPointAtLength(el.getTotalLength() * 0.3);
+    return { x: ctm.a * q.x + ctm.c * q.y + ctm.e, y: ctm.b * q.x + ctm.d * q.y + ctm.f };
+  });
+  if (!at) throw new Error('no Euphrates');
+  await page.mouse.click(at.x, at.y);
+  await expect(page.getByRole('dialog')).toBeVisible();
+});

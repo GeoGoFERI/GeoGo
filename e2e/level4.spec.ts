@@ -48,3 +48,27 @@ test('Level 4: a mountain range, a river and a sea', async ({ page }) => {
   await tapShape(page, 'peninsula-apeninski');
   await expect(page.getByRole('dialog')).toContainText('Apeninski polotok');
 });
+
+test('Level 4: the mouse near a river highlights that river only', async ({ page }) => {
+  test.skip(test.info().project.use.hasTouch === true, 'hover needs a mouse');
+  await page.goto('/?round=river-donava');
+  await page.getByRole('button', { name: /Narava Evrope/ }).click();
+  await page.getByRole('button', { name: 'Začni' }).click();
+  await settle(page);
+  // A point 4 px beside the Danube: inside its invisible tap zone, off the drawn line.
+  const at = await page.evaluate(() => {
+    const el = document.querySelector<SVGPathElement>('path[data-id="river-donava"]');
+    const ctm = el?.getScreenCTM();
+    if (!el || !ctm) return null;
+    const q = el.getPointAtLength(el.getTotalLength() * 0.5);
+    return { x: ctm.a * q.x + ctm.c * q.y + ctm.e, y: ctm.b * q.x + ctm.d * q.y + ctm.f + 4 };
+  });
+  if (!at) throw new Error('no Danube');
+  await page.mouse.move(at.x, at.y);
+  const stroke = (id: string): Promise<string> =>
+    page.locator(`path[data-id="${id}"]`).evaluate((el) => getComputedStyle(el).stroke);
+  const hover = await stroke('river-donava');
+  for (const id of ['river-ren', 'river-volga']) expect(await stroke(id)).not.toBe(hover);
+  await page.mouse.move(5, 5);
+  await expect.poll(() => stroke('river-donava')).toBe(await stroke('river-ren'));
+});

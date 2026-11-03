@@ -9,6 +9,7 @@ import {
   type Ref,
 } from 'react';
 import { geoPath } from 'd3-geo';
+import type { Feature, Geometry } from 'geojson';
 import { createProjection } from './projection';
 import { useSize } from './useSize';
 import { anchorOf } from './anchors';
@@ -45,6 +46,8 @@ export interface MapViewProps {
   annotations?: readonly Annotation[];
   // The home view: fitted on mount, on resize, when it changes and by the reset button.
   region?: RegionId;
+  // How much of the home region's narrow side may be cropped to fill the screen (1 = none).
+  crop?: number;
   ref?: Ref<MapHandle>;
 }
 
@@ -58,6 +61,20 @@ export interface MapHandle {
 
 const NO_STATES: Readonly<Record<string, ShapeState>> = {};
 
+// Firefox redraws a path made of many separate lines slowly on every zoom frame: Level 1's
+// coastline, 1442 lines in one path, zoomed at 18 fps on desktop. Lines that are only context
+// are therefore drawn as one path per line (55 fps). Tappable lines stay one path each.
+export const drawPieces = (shape: MapShape): Feature<Geometry>[] => {
+  const g = shape.feature.geometry;
+  if (shape.interactive || shape.kind !== 'line' || g.type !== 'MultiLineString')
+    return [shape.feature];
+  return g.coordinates.map((coordinates) => ({
+    type: 'Feature',
+    properties: {},
+    geometry: { type: 'LineString', coordinates },
+  }));
+};
+
 // The interactive SVG map.
 export function MapView({
   shapes,
@@ -66,6 +83,7 @@ export function MapView({
   labels,
   shapeLabel,
   region = 'world',
+  crop = 1.35,
   annotations,
   ref,
 }: MapViewProps): ReactElement {
@@ -84,7 +102,13 @@ export function MapView({
       return { sphere: '', drawn: [], anchors, targets: [], path, projection, bounds };
     const drawn = shapes
       .filter((s) => s.kind !== 'point')
-      .map((s) => ({ shape: s, d: path(s.feature) ?? '' }));
+      .flatMap((s) =>
+        drawPieces(s).map((feature, i) => ({
+          shape: s,
+          key: i === 0 ? s.id : `${s.id}:${String(i)}`,
+          d: path(feature) ?? '',
+        })),
+      );
     for (const s of shapes) if (s.interactive) anchors.set(s.id, anchorOf(path, s.feature));
     const sphere = path({ type: 'Sphere' }) ?? '';
     return { sphere, drawn, anchors, targets: hitTargets(shapes, path), path, projection, bounds };
@@ -117,7 +141,7 @@ export function MapView({
           height,
           0.04,
           40,
-          1.35,
+          crop,
         ),
       );
     return {
@@ -130,7 +154,7 @@ export function MapView({
       },
       reset: () => fitToRegion(region),
     };
-  }, [controls, geometry, shapes, width, height, region]);
+  }, [controls, geometry, shapes, width, height, region, crop]);
 
   useImperativeHandle(ref, () => handle, [handle]);
 

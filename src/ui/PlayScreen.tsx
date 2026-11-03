@@ -122,6 +122,9 @@ export function PlayScreen({
           labels={sl.mapLabels}
           shapeLabel={shapeLabel}
           region={homeRegion}
+          // Grid points reach the edge of the globe and Level 5 targets the edge of their
+          // continent, so these home views must not be cropped.
+          {...(q.mode === 'coords' || level === 5 ? { crop: 1 } : {})}
           {...(q.mode === 'coords' ? { annotations: data.gridAnnotations(sl.gridWords) } : {})}
         />
         <div className="play__toasts">{toast}</div>
