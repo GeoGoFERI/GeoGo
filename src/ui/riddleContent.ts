@@ -18,6 +18,7 @@ export const riddlesFor = (data: GameData): Map<string, Riddle> => {
         neighbours: sl.neighbours,
         noNeighbours: sl.noNeighbours,
         part: sl.partOfEurope,
+        clue: sl.riddleClue,
       },
     );
     cache.set(data, riddles);

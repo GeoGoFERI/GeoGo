@@ -65,6 +65,7 @@ export const sl = {
   country: 'Država',
   riddleAsk: 'Katera država je to?',
   partOfEurope: 'Del Evrope',
+  riddleClue: 'Namig',
   readAloud: 'Preberi na glas',
   modeLabel: 'Način igre',
   modes: {

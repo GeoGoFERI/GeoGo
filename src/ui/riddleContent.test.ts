@@ -17,10 +17,17 @@ describe('riddles', () => {
     expect(text).not.toContain('Slovenija');
   });
 
-  it('leave out countries whose riddle would fit another country too', () => {
-    // Vatikan and San Marino are both landlocked with only Italy around them.
-    expect(riddles.has('country-va')).toBe(false);
-    expect(riddles.has('country-sm')).toBe(false);
+  it('tell apart countries with the same coast, neighbours and part of Europe', () => {
+    // Vatikan and San Marino are both landlocked with only Italy around them; Ciper and Malta
+    // are both islands in Južna Evropa. An extra clue tells each pair apart.
+    for (const id of ['country-va', 'country-sm', 'country-cy', 'country-mt']) {
+      const riddle = riddles.get(id);
+      if (!riddle) throw new Error(`no riddle for ${id}`);
+      expect(riddleText(riddle)).toContain('Namig:');
+    }
+  });
+
+  it('give every riddle a single answer', () => {
     const texts = [...riddles.values()].map(riddleText);
     expect(new Set(texts).size).toBe(texts.length);
     // Most countries still have one.
