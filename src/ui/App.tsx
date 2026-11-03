@@ -19,6 +19,7 @@ import { itemsInLevel } from '../core/item';
 import { FactCard } from './FactCard';
 import { factContent, pointFactContent } from './factContent';
 import { Confetti } from './Confetti';
+import { HomeIcon } from './icons';
 import logoUrl from './assets/logo.webp';
 
 const store = browserStore();
@@ -108,6 +109,16 @@ export function App(): ReactElement {
     <div className="app">
       {(view.screen === 'atlas' || view.screen === 'summary' || view.screen === 'coast') && (
         <header className="app__header">
+          {view.screen === 'coast' && !view.game.done && (
+            <button
+              type="button"
+              className="btn btn--plain btn--round app__home"
+              onClick={() => dispatch({ type: 'home' })}
+              aria-label={sl.home}
+            >
+              <HomeIcon />
+            </button>
+          )}
           <button
             type="button"
             className="app__logo-btn"

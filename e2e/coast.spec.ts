@@ -26,3 +26,12 @@ test('mini-game: sort countries into coastal and landlocked', async ({ page }) =
   await page.getByRole('button', { name: 'Še enkrat' }).click();
   await expect(page.getByText('Karta 1 od 10')).toBeVisible();
 });
+
+test('mini-game: the home button leaves mid-game', async ({ page }) => {
+  await page.goto('/?seed=5');
+  await page.getByRole('button', { name: 'Obmorska ali celinska?' }).click();
+  await page.getByRole('button', { name: 'Začni' }).click();
+  await expect(page.getByText('Karta 1 od 10')).toBeVisible();
+  await page.getByRole('button', { name: 'Domov' }).click();
+  await expect(page.getByRole('button', { name: 'Obmorska ali celinska?' })).toBeVisible();
+});

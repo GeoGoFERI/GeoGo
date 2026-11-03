@@ -5,11 +5,23 @@
 }
 
 .app__header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 4px 16px;
   border-bottom: var(--border);
+}
+
+/* Pinned left so the logo stays centred. */
+.app__home {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  width: var(--touch);
+  height: var(--touch);
 }
 
 .app__logo-btn {

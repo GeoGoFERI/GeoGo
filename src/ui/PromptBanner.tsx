@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import { sl } from '../i18n/sl';
+import { HomeIcon } from './icons';
 
 export type PromptBannerProps = {
   label: string;
@@ -32,15 +33,7 @@ export function PromptBanner({
         onClick={onHome}
         aria-label={sl.home}
       >
-        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-          <path
-            d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"
-            fill="var(--geogo-yellow)"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <HomeIcon />
       </button>
       <div className="banner__prompt" aria-live="polite">
         <span className="banner__label">{label}</span>

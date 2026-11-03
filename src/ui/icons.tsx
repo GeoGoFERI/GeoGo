@@ -24,6 +24,20 @@ export const StarIcon = ({
   );
 };
 
+export const HomeIcon = ({ size = 24 }: { size?: number }): ReactElement => {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <path
+        d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"
+        fill="var(--geogo-yellow)"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};
+
 export const CheckIcon = ({ size = 28 }: { size?: number }): ReactElement => {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
